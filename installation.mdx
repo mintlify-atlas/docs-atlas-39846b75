@@ -1,7 +1,7 @@
 ---
 title: "Install The Claude Council on macOS, Linux, and Windows"
 sidebarTitle: "Installation"
-description: "Step-by-step installation guide for The Claude Council on macOS, Linux, WSL2, and Windows PowerShell — plus IDE integration for VS Code, Cursor, Windsurf, and JetBrains."
+description: "Install The Claude Council on macOS, Linux, WSL2, or Windows PowerShell with IDE integration for VS Code, Cursor, Windsurf, and JetBrains."
 ---
 
 This guide walks through installing The Claude Council on every supported platform. The installer is fully cross-platform: macOS, Linux, and WSL2 use the bash script; Windows users get a native PowerShell script that requires no WSL2, Git Bash, or shell emulation. IDE integration is auto-detected and applied as opt-in templates — the installer never overwrites your existing IDE settings. After installation, open any project in any Claude Code-compatible IDE and the Council fires automatically on the next prompt.
@@ -86,7 +86,7 @@ Everything else — rules, skills, agents, commands, hooks, and templates — sh
     .\bootstrap\verify.ps1 -Verbose
     ```
 
-    The PowerShell installer places the config at `$env:USERPROFILE\.claude\`, which is the location the `claude` CLI on Windows expects. The verifier runs the same phases as `verify.sh` (Layout / Inventory / Agent frontmatter / Skill SKILL.md / Hook readability / Broken cross-references / No project contamination) and prints a green or red verdict identical in shape to the bash version.
+    The PowerShell installer places the config at `$env:USERPROFILE\.claude\`, which is the location the `claude` CLI on Windows expects. The verifier runs the same phases as `verify.sh` (Layout / Inventory / Agent frontmatter / Skill SKILL.md / Hook executability / Broken cross-references / No project contamination / Code-graph validation) and prints a green or red verdict identical in shape to the bash version.
 
     <Note>
       If you see *"running scripts is disabled on this system"*, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` before invoking the installer. This change is scoped to the current PowerShell session only.
@@ -221,19 +221,23 @@ A healthy install reports output similar to:
 ```text
 == Phase A: Layout exists ==
 == Phase B: Inventory floors ==
-  ✓ rules/common/*.md   ≥ 10   (got 24, ...)
-  ✓ rules-library/*.md  ≥ 100  (got 187, ...)
-  ✓ skills/             ≥ 90   (got 119, ...)
-  ✓ agents/*.md         ≥ 25   (got 39, ...)
-  ✓ commands/*.md       ≥ 30   (got 33, ...)
+  ✓ rules/common/*.md (Floor) ≥ 10  (got 26, expected -ge 10)
+  ✓ rules-library/*.md       ≥ 100  (got 187, expected -ge 100)
+  ✓ skills/                  ≥ 90   (got 119, expected -ge 90)
+  ✓ agents/*.md              ≥ 25   (got 39, expected -ge 25)
+  ✓ commands/*.md            ≥ 30   (got 33, expected -ge 30)
 == Phase C: Agent frontmatter sanity ==
 == Phase D: Skill SKILL.md presence ==
 == Phase E: Hook executability ==
 == Phase F: Broken cross-references ==
 == Phase G: No project contamination ==
+== Phase H: Code-graph validation (full scope) ==
+  ⊘ skipped — ~/.claude/scripts/code-graph-validate.sh not executable
 
+================================================================
 VERIFICATION SUMMARY
-Inventory: 24 rules.common, 18 lang subfolders, 119 skills, 39 agents, 33 commands
+================================================================
+Inventory: 26 rules.common, 18 lang subfolders, 119 skills, 39 agents, 33 commands
 Checks:    21 passed, 0 failed
 
 ✓ PASS — global Claude config is healthy.
@@ -252,10 +256,13 @@ If you have an existing Claude or Codex setup and want to apply the lean workflo
 
 ```bash
 # Preview the migration without applying it
-python3 bootstrap/context.py apply --dry-run
+python3 bootstrap/context.py apply --claude-home ~/.claude --dry-run
 
 # Apply the migration
-python3 bootstrap/context.py apply
+python3 bootstrap/context.py apply --claude-home ~/.claude
+
+# Roll back the migration
+python3 bootstrap/context.py restore --claude-home ~/.claude
 ```
 
 See `docs/CONTEXT.md` in the repo for full details on context budgets, cost controls, and runtime limitations.

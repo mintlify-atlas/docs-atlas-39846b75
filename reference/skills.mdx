@@ -61,7 +61,7 @@ Per the principal-level mandate, every skill uses the following elements where t
 | `swift-actor-persistence` | Thread-safe actors; data persistence |
 | `swift-protocol-di-testing` | Protocol DI; mock patterns |
 
-### Frontend + design
+### Frontend + UI
 
 | Skill | Purpose |
 | ----- | ------- |
@@ -72,7 +72,7 @@ Per the principal-level mandate, every skill uses the following elements where t
 | `ux-research` | Generative + evaluative methods; recruitment; sample sizing; persona + JTBD synthesis |
 | `e2e-testing` | Playwright patterns; critical user journeys |
 
-### Infrastructure + cloud
+### Cloud + infrastructure
 
 | Skill | Purpose |
 | ----- | ------- |
@@ -96,7 +96,18 @@ Per the principal-level mandate, every skill uses the following elements where t
 | `ferpa-coppa-compliance` | FERPA + COPPA + GDPR-K + AADC + state student-privacy laws |
 | `security-scan` | Audit Claude Code config itself (meta-skill) |
 
-### Data + analytics
+### Industry + payments + clinical + edtech
+
+| Skill | Purpose |
+| ----- | ------- |
+| `payment-processing-patterns` | Idempotency; 3DS2 + SCA; tokenization; subscriptions; refunds; payouts; escrow; ledger reconciliation; MTL |
+| `clinical-data-patterns` | FHIR R5 + USCDI v4; HL7 v2; CDA / CCDA; SMART on FHIR; ICD-10 / SNOMED-CT / LOINC; DICOM |
+| `edtech-patterns` | LTI 1.3; xAPI 2.0; cmi5; SCORM; OneRoster; Caliper; QTI; Open Badges 3.0; UDL 3.0 |
+| `calendar-provider` | Calendar API integration patterns (RFC 4791 / 5545 / 5546 / 6638) |
+| `provider-research` | Primary-source docs for any external provider |
+| `web-push-notifications` | RFC 8030 / 8291 / 8292; W3C Push API; VAPID |
+
+### Database
 
 | Skill | Purpose |
 | ----- | ------- |
@@ -106,7 +117,16 @@ Per the principal-level mandate, every skill uses the following elements where t
 | `clickhouse-io` | Analytics queries; ClickHouse data engineering |
 | `jpa-patterns` | JPA entity design; relationships; queries |
 
-### Finance + accounting
+### Framework-specific
+
+| Skill | Purpose |
+| ----- | ------- |
+| `django-patterns` | Architecture; DRF; ORM; middleware; auth; CSRF; SQL injection; XSS |
+| `django-testing` | pytest-django; factory_boy; mocking; migrations; linting; coverage; deployment |
+| `springboot-patterns` | Layered architecture; REST; caching; auth; validation; CSRF; secrets |
+| `springboot-testing` | JUnit 5; Mockito; Testcontainers; build; analysis; coverage; security scans |
+
+### Finance + accounting + investment
 
 | Skill | Purpose |
 | ----- | ------- |
@@ -120,7 +140,7 @@ Per the principal-level mandate, every skill uses the following elements where t
 | `portfolio-theory` | Markowitz mean-variance; CAPM; factor models; risk budgeting; rebalancing; drawdown + tail-risk |
 | `stock-broker` | Order types; routing; TCA; best execution; Reg NMS / MiFID II; suitability |
 
-### AI/ML + LLM
+### AI/ML
 
 | Skill | Purpose |
 | ----- | ------- |
@@ -132,18 +152,6 @@ Per the principal-level mandate, every skill uses the following elements where t
 | `eval-harness` | Formal evaluation harness for AI/ML systems |
 | `iterative-retrieval` | Sub-agent pattern for retrieval-augmented work |
 
-### Testing
-
-| Skill | Purpose |
-| ----- | ------- |
-| `tdd-workflow` | Red-Green-Refactor; 90% touched / 80% project coverage |
-| `verification-loop` | After-implementation build/lint/test verification + strategic context management |
-| `e2e-testing` | Playwright patterns; critical user journeys |
-| `golang-testing` | Table-driven tests; subtests; benchmarks; fuzzing |
-| `python-testing` | pytest; fixtures; mocking; parametrization |
-| `cpp-testing` | GoogleTest; CTest; sanitizers |
-| `swift-protocol-di-testing` | Protocol DI; mock patterns |
-
 ### Accessibility
 
 | Skill | Purpose |
@@ -151,20 +159,30 @@ Per the principal-level mandate, every skill uses the following elements where t
 | `wcag-accessibility` | WCAG 2.2 AA + AAA; semantic HTML; ARIA 1.2; keyboard; screen reader; contrast; motion; 9 new SCs |
 | `accessible-forms` | Labels; errors; autocomplete; validation timing; multi-step; file inputs; Redundant Entry + Accessible Authentication |
 
-### Innovation + strategy
+### Strategy + innovation
 
 | Skill | Purpose |
 | ----- | ------- |
 | `design-thinking` | Empathise → Define → Ideate → Prototype → Test; HMW questions |
 | `triz-patterns` | TRIZ 40 inventive principles; contradiction matrix; ideal final result |
 | `lean-startup` | Build-measure-learn; validated learning; MVP taxonomy; innovation accounting; pivot types |
+
+### Industrial + operations
+
+| Skill | Purpose |
+| ----- | ------- |
 | `lean-manufacturing` | Toyota Production System; JIT; jidoka; kanban; 5S; value-stream mapping; kaizen |
 | `six-sigma` | DMAIC; DMADV; SIPOC; process capability (Cp/Cpk); control charts; DOE |
 | `supply-chain-patterns` | APICS CPIM/CSCP; S&OP; demand planning; inventory optimisation; SCOR |
+
+### Structural + civil engineering
+
+| Skill | Purpose |
+| ----- | ------- |
 | `structural-basics` | Eurocode / AISC / ACI; load paths; structural integrity |
 | `mep-coordination` | ASHRAE; ISO 19650 BIM; MEP coordination; clash detection |
 
-### Org + culture
+### Organisation + people + management
 
 | Skill | Purpose |
 | ----- | ------- |
@@ -172,10 +190,24 @@ Per the principal-level mandate, every skill uses the following elements where t
 | `okr-framework` | Objectives + Key Results design; deployment; grading; anti-pattern avoidance |
 | `hiring-process` | Role definition; sourcing; structured interviewing; bar-raising; calibration |
 | `performance-management` | Feedback systems; calibration; career frameworks; PIPs |
+
+### Interpersonal + communications + research
+
+| Skill | Purpose |
+| ----- | ------- |
 | `negotiation-patterns` | Harvard Method; BATNA + ZOPA; tactical empathy (Voss); preparation; multi-issue tradeoffs |
 | `communication-patterns` | Pyramid Principle; audience analysis; mode selection; difficult conversations |
 | `research-methods` | Primary / secondary / tertiary sources; quant / qual / mixed methods; literature review |
 | `historical-analysis` | Primary-source critique; archival methodology; periodisation; oral history; cliometrics |
+
+### Meta + utility (not auto-fired)
+
+| Skill | Purpose |
+| ----- | ------- |
+| `configure-ecc` | Install / configure skills |
+| `project-guidelines-example` | Template reference |
+| `learned` | Learning records repository |
+| `nutrient-document-processing` | Nutrient API document processing |
 
 ### Launch + media (BRAG)
 

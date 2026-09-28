@@ -1,7 +1,7 @@
 ---
 title: "Context Controls, Session Cost, and Adaptive Workflow"
 sidebarTitle: "Context & Cost"
-description: "How The Claude Council manages context window budget, adaptive workflow defaults, and session cost — including the lean cold-load contract and on-demand lazy loading."
+description: "How The Claude Council manages context budget and session cost: a lean cold-load contract, on-demand lazy loading, and additive migration controls."
 ---
 
 The Claude Council uses a short working contract loaded at session start and reads detailed standards on demand. Correctness, security, and required tests still apply — but fixed speeches, repeated intake, recursive reviews, and automatic agent fan-out are not substitutes for those checks. Context budget is measured and enforced: the cold-load contract is a tight ~19,428 bytes, while the full ~4.8 MB standards library is available only when a task actually needs it.
@@ -33,9 +33,10 @@ Byte counts and bytes/4 token estimates are reproducible size measurements, not 
 Measure and verify the budget at any time:
 
 ```bash
-node scripts/token-budget.mjs --root . --check
 node scripts/token-budget.mjs --root . --json
+node scripts/token-budget.mjs --root . --check
 node scripts/token-budget.mjs --root ~/.claude --json
+python3 -m unittest discover -s tests/codex -v
 ```
 
 ## The Two Context Hazards
@@ -61,6 +62,26 @@ Fresh installs configure Claude Code with a set of session controls designed to 
 
 The documented workflow concurrency environment limit requires Claude Code 2.1.269+; it is not applied to older clients. These defaults are intended for Claude Code 2.1.261+.
 
+## Codex-Specific Defaults
+
+The native Codex installer defaults to compact skill discovery: one `council` router, all source skills, commands, and references in the catalog, and all 39 native specialist roles. This keeps the full library accessible without advertising every skill entry on every request. Full discovery remains an explicit option:
+
+```bash
+python3 bootstrap/codex.py install --skill-profile compact
+python3 bootstrap/codex.py install --skill-profile full
+```
+
+Subsequent installs retain the selected profile. Installations from before profiles were introduced migrate to compact discovery unless `--skill-profile full` is given.
+
+Apply optional runtime cost controls to Codex separately:
+
+```bash
+python3 bootstrap/context.py apply --codex-home ~/.codex --dry-run
+python3 bootstrap/context.py apply --codex-home ~/.codex
+```
+
+This sets the auto-compact token limit to 100,000 and the concurrent spawned-agent limit to one. It preserves the primary model, effort level, and unrelated configuration. Restart active sessions to pick up the change.
+
 ## Additive Migration for Existing Installs
 
 For an existing installation, preview and apply the additive migration:
@@ -77,9 +98,10 @@ To restore the previous state:
 ```bash
 python3 bootstrap/context.py restore --claude-home ~/.claude --dry-run
 python3 bootstrap/context.py restore --claude-home ~/.claude
+python3 bootstrap/context.py restore --codex-home ~/.codex
 ```
 
-Each home has a private `.council-context.json` containing original file backups. Do not publish it. Restore refuses if managed files have changed; reconcile those changes first.
+Each home has a private `.council-context.json` containing original file backups. Do not publish it. Restore refuses if managed files have changed; reconcile those changes first. Separate homes are independent transactions; handled failures roll back and individual writes are atomic.
 
 ## Model Tier Selection
 

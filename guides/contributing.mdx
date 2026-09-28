@@ -149,7 +149,7 @@ When in doubt: write the principle in global, the specifics in project.
     bash tests/verify-standards-citations.sh
     ```
 
-    This verifier checks that every rule cites at least three primary sources matching the citation regex (see below). The PR is blocked if this check fails.
+    This verifier checks that every rule cites at least one primary source matching the citation regex (see below). The build gate floor is 1; the ≥ 3 target is an authoring quality bar enforced at review time. The PR is blocked if this check fails.
   </Step>
 </Steps>
 
@@ -269,7 +269,7 @@ Every PR runs these gates. All must pass before merge:
 | Integrity | `bash bootstrap/verify.sh` | 17/17 internal checks: file structure, cross-references, template conformance |
 | Link integrity | `bash tests/verify-link-integrity.sh` | Every cross-reference resolves to an existing file |
 | Orphan check | `bash tests/verify-no-orphans.sh` | No unreferenced files left dangling |
-| Standards citations | `bash tests/verify-standards-citations.sh` | Every rule cites ≥ 3 primary sources matching the citation regex |
+| Standards citations | `bash tests/verify-standards-citations.sh` | Every rule cites ≥ 1 primary source matching the citation regex (build gate floor; deeper citation richness is a review-time bar) |
 | Markdown lint | `npx markdownlint-cli2 "**/*.md"` | MD040 fenced code language, MD031 blanks around code, MD022 blanks around headings |
 | Shell lint | `shellcheck -S style bootstrap/*.sh tests/*.sh` | Style-level shellcheck on all bootstrap and test scripts |
 | Native adapter | (CI job) | Council Codex adapter installs cleanly on Linux, macOS, and Windows |
@@ -277,13 +277,13 @@ Every PR runs these gates. All must pass before merge:
 
 ## Standards citation regex
 
-The `verify-standards-citations.sh` test checks every rule for at least three citations matching:
+The `verify-standards-citations.sh` test checks every rule for at least one citation matching (floor is 1; the 3-citation depth bar is a review-time concern, not a build gate):
 
 ```text
-(RFC [0-9]+|ISO/IEC|NIST|OWASP|WCAG|W3C|§|PEP [0-9]+|SLSA|CWE|JEP|SE-[0-9])
+(RFC [0-9]+|ISO/?IEC [0-9]+|ISO [0-9]+|NIST (SP|AI RMF|CSF|Privacy)|OWASP (ASVS|Top 10|A0[1-9]|A10)|WCAG [0-9]\.[0-9]|W3C|ARIA [0-9]|§[0-9]|§ ?[0-9]|PEP [0-9]+|IFRS [0-9]+|ASC [0-9]+|IAS [0-9]+|ITIL [0-9]|Semantic Versioning [0-9]+\.[0-9]+|Conventional Commits [0-9]+\.[0-9]+|Keep a Changelog [0-9]+\.[0-9]+|CommonMark|Di[áa]taxis|arc42|C4 Model|OpenAPI [0-9]+\.[0-9]+|GraphQL Spec|AsyncAPI [0-9]+\.[0-9]+|Protocol Buffers|GDPR (Article|Art\.?) [0-9]+|GDPR Regulation|CCPA|CPRA|HIPAA|PCI-?DSS|SOC ?2|LGPD|POPIA|PIPEDA|APPI|PDPA|HITECH|SOX|FERPA|COPPA|MiFID|GLBA|Regulation \(EU\) [0-9]+|Regulation 20[0-9]{2}/[0-9]+|Cal\.? ?Civ\.? ?Code|IEEE [0-9]+|ECMA-?[0-9]+|ECMAScript [0-9]+|ECMAScript Internationalization|ADA Title|Section 508|EAA|EN 301 ?549|FedRAMP|FIPS [0-9]+|SLSA|CIS Controls|CWE-[0-9]+|CWE Top 25|FAPI [0-9]|OAuth ?2|OpenID Connect|CC BY|MIT License|Apache-?2|BSD-?[0-9]|SPDX)
 ```
 
-Examples of citations that match: `RFC 9110 §9.3.1`, `ISO/IEC 27001:2022`, `OWASP ASVS 4.0.3`, `WCAG 2.2 §1.4.3`, `NIST SP 800-63B`, `PEP 484`, `SLSA Level 2`, `CWE-79`, `SE-99`.
+Examples of citations that match: `RFC 9110 §9.3.1`, `ISO/IEC 27001:2022`, `OWASP ASVS 4.0.3`, `WCAG 2.2 §1.4.3`, `NIST SP 800-63B`, `PEP 484`, `SLSA Level 2`, `CWE-79`, `HIPAA`, `GDPR Article 32`, `OpenAPI 3.1.0`.
 
 ## PR verification block
 

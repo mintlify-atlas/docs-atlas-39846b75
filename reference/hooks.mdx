@@ -1,7 +1,7 @@
 ---
-title: "Hook Scripts: Mechanical Quality Gates for Every Lifecycle Event"
+title: "Hook Scripts: Council Lifecycle Quality Gates Reference"
 sidebarTitle: "Hooks"
-description: "Reference for the 25+ hook scripts that enforce Council quality gates at PreToolUse, PostToolUse, SessionStart, PreCompact, and Stop lifecycle events."
+description: "Complete reference for Council hook scripts: PreToolUse gates, PostToolUse checkers, and session lifecycle hooks that make quality rules mechanical."
 ---
 
 Hooks turn rules into machinery. Where a rule document says "never do X," a hook makes it impossible to silently drift past that rule — they run automatically at lifecycle events, inspect the actual tool call or file diff, and exit non-zero when a banned pattern appears. If a banned pattern lands in a `PostToolUse` diff, the hook blocks the edit and returns the error to the agent in the same turn, which forces a corrective edit before any other work continues. The Council ships 25+ hook scripts covering every lifecycle event Claude Code exposes.
@@ -80,7 +80,7 @@ These hooks fire after a tool call completes. Exit 2 returns the error to the ag
 | `evaluate-session.js` | `SessionEnd` | Evaluates session quality patterns for the continuous learning loop |
 | `tool-failure-recorder.js` | `PostToolUseFailure` | Records tool failures to `audits/learning-events.jsonl` for cross-session learning |
 | `permission-denied-audit.js` | `PermissionDenied` | Audits every permission denial for security review |
-| `model-exhaustion-marker.js` | `PreModelSwitch` | Marks model exhaustion events for telemetry |
+| `model-exhaustion-marker.js` | `StopFailure`, `PostToolUse`, `PostToolUseFailure`, `Stop` | Records model tier exhaustion so `model-ladder-gate.js` can route around the exhausted tier |
 
 ## Deep dive: `post-edit-no-discards.js`
 
@@ -142,6 +142,17 @@ Hooks are declared in `~/.claude/settings.json` under the `hooks` key. Each entr
           }
         ]
       },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/scripts/hooks/suggest-compact.js\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
       {
         "matcher": "Edit|Write",
         "hooks": [

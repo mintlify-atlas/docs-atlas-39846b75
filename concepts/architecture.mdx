@@ -1,7 +1,7 @@
 ---
 title: "How The Claude Council Is Structured and Composed"
 sidebarTitle: "Architecture"
-description: "The Claude Council composes five layers — CLAUDE.md, Floor rules, skills, specialist agents, and lifecycle hooks — into a mechanical, principal-level review system."
+description: "Five composable layers — CLAUDE.md, rules, skills, agents, and hooks — make The Claude Council a mechanical, principal-level review system."
 ---
 
 The Claude Council is not a single agent — it is a layered system of five primary surfaces that compose into a complete, mechanical review protocol. A concise working contract loaded at session start routes every prompt through the right combination of rules, skills, specialist agents, and hook-enforced gates. Each surface has a single responsibility: the orchestrator sets direction, the rules enforce principles, the skills supply patterns, the agents own expertise, and the hooks make compliance non-optional.
@@ -22,7 +22,7 @@ The Claude Council is not a single agent — it is a layered system of five prim
     39 delegatable specialists, each with frontmatter declaring `name`, `description`, `tools`, and `model`. The Council protocol delegates to an agent when its expertise is needed. Every agent follows the principal-level mandate: identity + mission, declared global-rules enforcement, auto-fire triggers, decision authority, a review checklist, standards-cited references, structured output shape, anti-patterns to reject, pairing model, and escalation triggers.
   </Card>
   <Card title="hooks/ + scripts/hooks/ — the mechanical gates" icon="shield-check">
-    25 hook scripts that fire automatically at lifecycle events. Hooks turn rules into machinery: they make it impossible to silently drift past a rule. If a banned pattern lands in a `PostToolUse` diff, the hook blocks the edit and returns the error to the agent. Covers `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PreCompact`, `Stop`, and `SessionEnd`.
+    Hook scripts that fire automatically at lifecycle events. Hooks turn rules into machinery: they make it impossible to silently drift past a rule. If a banned pattern lands in a `PostToolUse` diff, the hook blocks the edit and returns the error to the agent. Covers `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PreCompact`, `Stop`, and `SessionEnd`.
   </Card>
   <Card title="bootstrap/ — cross-OS installer" icon="rocket">
     Parallel install paths for macOS/Linux/WSL2 (bash) and Windows native PowerShell. Idempotent: any existing `~/.claude/` is moved aside to a timestamped backup before the new one lands. Includes reversible context migration, verification scripts, and Codex lifecycle support.
