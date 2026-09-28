@@ -1,0 +1,97 @@
+---
+title: "The Claude Council: Principal-Level AI for Claude Code"
+sidebarTitle: "Introduction"
+description: "The Claude Council adds a 16-division multi-agent structure to Claude Code with rules, skills, agents, commands, and hook-enforced quality gates — all in a drop-in ~/.claude/ config."
+---
+
+The Claude Council is a drop-in `~/.claude/` configuration that turns Claude Code from a powerful generalist into a 16-division multi-agent Council operating at principal-engineer level across the entire stack. It ships 26 Floor rules, 187 Library rules, 119 skills, 39 specialist agents, 33 command workflows, and 25 hooks — all inside a single installer that backs up your existing config and fires on the next Claude Code session. There is no SaaS subscription, no license key, no telemetry, and no org dependency. Clone the repo, run the installer, and every prompt in every project has architecture, security, compliance, ops, data, finance, risk, strategy, people, ESG, ethics, and communications expertise available by default.
+
+## With vs. Without
+
+<CardGroup cols={2}>
+  <Card title="Without The Claude Council">
+    - One generalist agent, one perspective per prompt
+    - Implicit rules — different in every project
+    - Vague "done" claims
+    - No mechanical lint / security / discard gates
+    - Provider integrations built from npm READMEs
+    - Project memory + learnings scattered or lost
+    - Every project starts from a blank `.claude/`
+    - Documentation drift the moment code changes
+  </Card>
+  <Card title="With The Claude Council">
+    - 16 divisions speak on every prompt
+    - Same standards (OWASP / NIST / ISO / WCAG / GDPR) everywhere
+    - `"done"` requires same-turn verification — or it's downgraded
+    - Hook-enforced gates reject discards / suppressions / secrets at edit time
+    - Provider research mandatory before first handler — primary sources only
+    - Workspace `.claude/` auto-spawned with rules, skills, plans, memory, audits
+    - Continuous learning promotes cross-project patterns to global
+    - `docs-sync-with-code.md` gates ship the doc update in the same PR
+  </Card>
+</CardGroup>
+
+## The 16 Divisions
+
+The Council is divided into five core divisions that engage on every task and eleven extended divisions that engage when their domain is relevant.
+
+### Core Five
+
+| # | Division | Specialist Agents |
+|---|----------|------------------|
+| 1 | Architecture & Planning | `architect`, `planner` |
+| 2 | Implementation & Build | `build-resolvers`, `refactor` |
+| 3 | Quality & Review | `code-reviewer`, `lang-revs` |
+| 4 | Security | `security-reviewer` |
+| 5 | Testing & QA | `tdd-guide`, `e2e-runner` |
+
+### Extended Eleven
+
+| # | Division | Domain |
+|---|----------|--------|
+| 6 | Compliance & Legal | PII, GDPR, CCPA, HIPAA, PCI |
+| 7 | Product, UX & CX | UI files, copy, a11y, i18n |
+| 8 | Operations & Reliability | Runbooks, SLO, deploy, IaC |
+| 9 | Data & Analytics | Schema, events, ETL, PII |
+| 10 | Finance & FinOps | Pricing, cloud cost, ROI |
+| 11 | Risk Management | Blast radius, DR, destruct |
+| 12 | Strategy & Innovation | New features, ADRs, vendors |
+| 13 | People & Culture | CODEOWNERS, onboarding, DX |
+| 14 | Sustainability & ESG | Carbon, supplier ethics |
+| 15 | Ethics & Responsible AI | ML, LLM, bias, fairness |
+| 16 | Communications & Docs | README, CHANGELOG, API docs |
+
+## What's in the Box
+
+| Surface | Path | Count | What it does |
+|---------|------|-------|--------------|
+| **Doctrine** | `CLAUDE.md` | 1 | Concise working contract — loaded every session |
+| **Floor rules** | `rules/common/` | 26 | Always-loaded; Council protocol, intake, verification, plan structure, project memory, silent-failure / wiring / no-bloat / payload-validation / phase-retrospective enforcement |
+| **Library rules** | `rules-library/` | 187 | On-demand standards, including 27 preserved detailed Council references |
+| **Skills** | `skills/` | 119 | Guidance selected by description, task relevance or explicit invocation |
+| **Agents** | `agents/` | 39 | Specialist agents organised into the 16 Council divisions |
+| **Commands** | `commands/` | 33 | Slash commands — `/learn`, `/evolve`, `/instinct-status`, `/verify`, and more |
+| **Hooks** | `scripts/hooks/` | 25 | PreToolUse + PostToolUse + UserPromptSubmit + PreCompact + SessionStart/End — mechanical enforcement (no-discards, governance-sweep, pre-push gate, Council pre-compact brief) |
+| **Templates** | `templates/` | — | Project-scaffold template + IDE config templates for VS Code, Cursor, Windsurf, JetBrains |
+| **Bootstrap** | `bootstrap/` | — | Claude installers, native Codex lifecycle and reversible context migration |
+| **Docs** | `docs/` | 10 | Architecture, Council, Rules, Skills, Agents, Project-bootstrap, Contributing, lazy-loading classification, no-discards reference, branch-protection guide |
+| **Tests** | `tests/` | — | Integrity gates, native lifecycle/hooks and reversible migration tests |
+| **CI** | `.github/workflows/` | — | Integrity, lint, native adapter and context-budget regression gates |
+
+## Explore Further
+
+<CardGroup cols={3}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Up and running in 3 minutes — clone, install, verify.
+  </Card>
+  <Card title="Installation" icon="wrench" href="/installation">
+    Full cross-platform guide for macOS, Linux, Windows, and WSL2.
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/concepts/architecture">
+    How the 16 divisions, rules, skills, agents, and hooks fit together.
+  </Card>
+</CardGroup>
+
+<Note>
+  The Claude Council is released under the **MIT** license. Use it personally, share it with your team, or fork it for your org — no restrictions. The repo contains zero telemetry: no beacons, no usage tracking, no data leaves your machine.
+</Note>

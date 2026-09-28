@@ -1,0 +1,230 @@
+---
+title: "Slash Commands Reference: All 33 Council Commands"
+sidebarTitle: "Commands"
+description: "Reference for all 33 slash commands shipped with The Claude Council — code review, TDD, verification, learning, orchestration, build fixes, and more."
+---
+
+The Claude Council ships 33 slash commands that invoke Council workflows directly from any Claude Code session. Commands are stored in `~/.claude/commands/` and become available immediately after installation — no project configuration required. Each command file is plain Markdown with a frontmatter `name` and `description`, and contains the full instructions the Council follows when the command is invoked.
+
+## Core workflow commands
+
+These are the day-to-day commands for building, reviewing, and verifying code.
+
+| Command | Description |
+| ------- | ----------- |
+| `/code-review` | Comprehensive security and quality review of all uncommitted changes |
+| `/verify` | Run build, lint, type check, tests, and console.log audit in sequence |
+| `/plan` | Restate requirements, assess risks, and create a phased implementation plan — waits for user confirmation before touching code |
+| `/tdd` | Enforce test-driven development: scaffold interfaces, write failing tests, implement to pass, refactor, verify coverage |
+| `/build-fix` | Diagnose and incrementally fix build and type errors with minimal, safe changes |
+| `/e2e` | Generate and run end-to-end Playwright tests for critical user journeys |
+| `/refactor-clean` | Safely identify and remove dead code, unused exports, and unused dependencies with test verification at each step |
+| `/orchestrate` | Chain agents in a sequential workflow (feature, bugfix, refactor, or security) with structured handoff documents |
+| `/checkpoint` | Save a named session checkpoint to plan memory; compare state against earlier checkpoints |
+
+## Learning & evolution commands
+
+These commands feed The Council's continuous-learning loop. Patterns extracted from your sessions accumulate as instincts and can be promoted to skills, commands, or agents.
+
+| Command | Description |
+| ------- | ----------- |
+| `/learn` | Review the current session and extract the most valuable reusable pattern as a skill file |
+| `/learn-eval` | Extend `/learn` with a quality-gate rubric and save-location decision (global vs project) before writing |
+| `/evolve` | Cluster related instincts into higher-level structures — commands, skills, or agents |
+| `/eval` | Define and run eval-driven development checks for a named feature |
+| `/instinct-status` | Display all learned instincts grouped by domain with confidence scores |
+| `/instinct-export` | Export instincts to a shareable YAML file for teammates or new machines |
+| `/instinct-import` | Import instincts from a teammate export, Skill Creator, or community collection |
+
+## Multi-agent commands
+
+These commands coordinate multi-model workflows using Codex and Gemini as specialist sub-models alongside Claude.
+
+| Command | Description |
+| ------- | ----------- |
+| `/multi-plan` | Multi-model collaborative planning: context retrieval, dual-model analysis (Codex + Gemini), step-by-step plan saved to `.claude/plan/` |
+| `/multi-execute` | Multi-model collaborative execution: read plan, acquire prototype from Codex or Gemini, refactor to production grade, audit, deliver |
+| `/multi-frontend` | Frontend-focused workflow (Research → Ideation → Plan → Execute → Optimize → Review), Gemini-led |
+| `/multi-backend` | Backend-focused workflow (Research → Ideation → Plan → Execute → Optimize → Review), Codex-led |
+| `/multi-workflow` | General multi-model workflow with intelligent routing — frontend tasks go to Gemini, backend tasks go to Codex |
+
+## Language & tool-specific commands
+
+Targeted commands for specific languages and runtimes, each invoking the matching specialist agent.
+
+| Command | Description |
+| ------- | ----------- |
+| `/go-build` | Run `go build`, `go vet`, and `golangci-lint`; fix errors incrementally via the `go-build-resolver` agent |
+| `/go-review` | Comprehensive Go code review for idiomatic patterns, concurrency safety, error handling, and security via the `go-reviewer` agent |
+| `/go-test` | Enforce TDD workflow for Go with table-driven tests; verify 80%+ coverage with `go test -cover` |
+| `/python-review` | Comprehensive Python code review for PEP 8, type hints, security, and Pythonic idioms via the `python-reviewer` agent |
+
+## Utility commands
+
+Supporting commands for session management, project setup, and codebase maintenance.
+
+| Command | Description |
+| ------- | ----------- |
+| `/sessions` | List, load, alias, and inspect Claude Code session history stored in `~/.claude/sessions/` |
+| `/setup-pm` | Detect and configure the project's preferred package manager (npm / pnpm / yarn / bun) |
+| `/skill-create` | Scaffold a new skill end-to-end — from git-history pattern extraction (local mode) through principal-level SKILL.md authoring |
+| `/update-codemaps` | Analyze codebase structure and regenerate token-lean architecture documentation in `docs/CODEMAPS/` |
+| `/update-docs` | Sync documentation with the codebase, generating from source-of-truth files (package.json, .env.example, routes) |
+| `/pm2` | Auto-analyze the project, generate a PM2 `ecosystem.config.cjs`, and scaffold per-service start/stop/log commands |
+| `/test-coverage` | Analyze test coverage gaps and generate missing tests to reach the 80% project / 90% touched threshold |
+| `/vibe` | Switch to vibe coding mode — skip the formal Council protocol for fast, creative, flow-state work |
+
+---
+
+## Detailed command workflows
+
+The five commands below are the most-used in a typical Council session. Their full step sequences are reproduced here directly from the source files.
+
+### /code-review
+
+`/code-review` runs a comprehensive security and quality review of all uncommitted changes.
+
+<Steps>
+  <Step title="Get changed files">
+    Run `git diff --name-only HEAD` to identify all files that have changed since the last commit.
+  </Step>
+  <Step title="Check each file for security issues (CRITICAL)">
+    Scan for hardcoded credentials, API keys, and tokens; SQL injection vulnerabilities; XSS vulnerabilities; missing input validation; insecure dependencies; and path traversal risks.
+  </Step>
+  <Step title="Check each file for code quality (HIGH)">
+    Flag functions over 50 lines, files over 800 lines, nesting depth over 4 levels, missing error handling, `console.log` statements, TODO/FIXME comments, and missing JSDoc for public APIs.
+  </Step>
+  <Step title="Check best practices (MEDIUM)">
+    Identify mutation patterns (prefer immutable), emoji usage in code or comments, missing tests for new code, and accessibility issues.
+  </Step>
+  <Step title="Generate structured report">
+    Produce findings with severity (CRITICAL, HIGH, MEDIUM, LOW), file location and line numbers, issue description, and suggested fix.
+  </Step>
+  <Step title="Block if needed">
+    If any CRITICAL or HIGH issues are found, the commit is blocked until they are resolved. Security vulnerabilities are never approved.
+  </Step>
+</Steps>
+
+### /verify
+
+`/verify` runs a full verification sweep on the current codebase state and produces a pass/fail report.
+
+<Steps>
+  <Step title="Build check">
+    Run the project's build command. If it fails, report errors and stop — subsequent steps only run on a passing build.
+  </Step>
+  <Step title="Type check">
+    Run the TypeScript or language-specific type checker and report all errors with `file:line` references.
+  </Step>
+  <Step title="Lint check">
+    Run the linter and report all warnings and errors.
+  </Step>
+  <Step title="Test suite">
+    Run all tests and report pass/fail count and coverage percentage.
+  </Step>
+  <Step title="Console.log audit">
+    Search source files for `console.log` statements and report their locations.
+  </Step>
+  <Step title="Git status">
+    Show uncommitted changes and files modified since the last commit.
+  </Step>
+  <Step title="Produce report">
+    Output a concise verification report in the following format:
+
+    ```text
+    VERIFICATION: [PASS/FAIL]
+
+    Build:    [OK/FAIL]
+    Types:    [OK/X errors]
+    Lint:     [OK/X issues]
+    Tests:    [X/Y passed, Z% coverage]
+    Secrets:  [OK/X found]
+    Logs:     [OK/X console.logs]
+
+    Ready for PR: [YES/NO]
+    ```
+  </Step>
+</Steps>
+
+The command accepts optional arguments: `quick` (build + types only), `full` (all checks, default), `pre-commit` (checks relevant for commits), and `pre-pr` (full checks plus security scan).
+
+### /tdd
+
+`/tdd` invokes the `tdd-guide` agent to enforce a strict test-first methodology.
+
+<Steps>
+  <Step title="Scaffold interfaces">
+    Define types and interfaces for inputs and outputs first — before any implementation code exists.
+  </Step>
+  <Step title="Write failing tests (RED)">
+    Write tests that will fail because the implementation does not yet exist. Run the tests to confirm they fail for the right reason.
+  </Step>
+  <Step title="Implement minimal code (GREEN)">
+    Write the smallest possible implementation that makes the tests pass. Run the tests and verify they pass.
+  </Step>
+  <Step title="Refactor (REFACTOR)">
+    Improve the code — extract constants, simplify logic, improve readability — while keeping all tests green. Run the tests again to confirm.
+  </Step>
+  <Step title="Check coverage">
+    Run coverage tooling. If coverage is below 80%, add more tests and repeat from Step 2.
+  </Step>
+</Steps>
+
+The TDD cycle is `RED → GREEN → REFACTOR → REPEAT`. The RED phase is mandatory — never write implementation before tests, and never skip running tests to confirm they fail first. The `tdd-guide` agent targets 80% minimum coverage for all code, with 100% required for financial calculations, authentication logic, security-critical code, and core business logic.
+
+### /learn
+
+`/learn` analyzes the current session and extracts the most valuable reusable pattern as a skill file under `~/.claude/skills/learned/`.
+
+<Steps>
+  <Step title="Review the session">
+    Scan the current session for patterns worth extracting: error resolution patterns (root cause + fix + reusability), non-obvious debugging techniques, library or API workarounds, and project-specific conventions discovered during the session.
+  </Step>
+  <Step title="Identify the most valuable insight">
+    Focus on patterns that will save time in future sessions. Skip trivial fixes (typos, simple syntax errors) and one-time issues (specific API outages). Keep skills focused — one pattern per skill.
+  </Step>
+  <Step title="Draft the skill file">
+    Write the skill in the standard format: pattern name, extraction date, context (when it applies), problem description, solution (with code example if applicable), and trigger conditions.
+  </Step>
+  <Step title="Confirm with user">
+    Present the draft and ask for confirmation before writing to disk.
+  </Step>
+  <Step title="Save the skill">
+    Write the confirmed skill to `~/.claude/skills/learned/[pattern-name].md`.
+  </Step>
+</Steps>
+
+Use `/learn-eval` instead of `/learn` when you want a quality-gate rubric (scoring across specificity, actionability, scope fit, non-redundancy, and coverage) and an explicit decision about whether the skill belongs in the global `~/.claude/skills/learned/` or the project-local `.claude/skills/learned/`.
+
+### /evolve
+
+`/evolve` clusters related instincts into higher-level structures — commands, skills, or agents — using the `instinct-cli.py` script.
+
+<Steps>
+  <Step title="Read all instincts">
+    Load all instinct files from `~/.claude/homunculus/instincts/`.
+  </Step>
+  <Step title="Group into clusters">
+    Group instincts by domain similarity, trigger-pattern overlap, and action-sequence relationships.
+  </Step>
+  <Step title="Determine evolution type for each cluster">
+    A cluster of 3 or more related instincts evolves into one of:
+    - **Command** — when instincts describe user-invoked actions or repeatable sequences
+    - **Skill** — when instincts describe behaviors that should happen automatically (pattern-matching, error handling, style enforcement)
+    - **Agent** — when instincts describe complex multi-step processes that benefit from isolation (debugging workflows, refactoring sequences, research tasks)
+  </Step>
+  <Step title="Generate evolved structures">
+    For each qualifying cluster, generate the appropriate file and save to `~/.claude/homunculus/evolved/{commands,skills,agents}/`. Link evolved structures back to their source instincts.
+  </Step>
+  <Step title="Present analysis to user">
+    Show a preview of all clusters, their evolution type, confidence score, and what files would be created. Run `/evolve --execute` to actually create the files.
+  </Step>
+</Steps>
+
+The command accepts flags: `--domain <name>` (only evolve instincts in a specified domain), `--dry-run` (preview without creating), `--threshold <n>` (minimum instincts required to form a cluster, default 3), and `--type <command|skill|agent>` (only create the specified evolution type).
+
+---
+
+<Tip>
+Every command file ships with an **8 KB size budget** (10 KB for `/tdd`, 13 KB for `/e2e` and `/multi-execute`, 32 KB for `/skill-create`). If a command file grows beyond its budget, run `token-budget.mjs --check` to verify. Keeping commands within their budget ensures they load efficiently in every session without consuming excess context window.
+</Tip>

@@ -1,0 +1,197 @@
+---
+title: "Hook Scripts: Mechanical Quality Gates for Every Lifecycle Event"
+sidebarTitle: "Hooks"
+description: "Reference for the 25+ hook scripts that enforce Council quality gates at PreToolUse, PostToolUse, SessionStart, PreCompact, and Stop lifecycle events."
+---
+
+Hooks turn rules into machinery. Where a rule document says "never do X," a hook makes it impossible to silently drift past that rule — they run automatically at lifecycle events, inspect the actual tool call or file diff, and exit non-zero when a banned pattern appears. If a banned pattern lands in a `PostToolUse` diff, the hook blocks the edit and returns the error to the agent in the same turn, which forces a corrective edit before any other work continues. The Council ships 25+ hook scripts covering every lifecycle event Claude Code exposes.
+
+## Lifecycle events
+
+| Event | What runs | Purpose |
+| --- | --- | --- |
+| `SessionStart` | `session-start.js`, `cbm-session-reminder` | Loads workspace `CLAUDE.md`, primes context, surfaces workspace rules and learned skills |
+| `UserPromptSubmit` | prompt-improver skill | Prompt-improver evaluates clarity; vague prompts route through the `prompt-improver` skill |
+| `PreToolUse` | Gate scripts (see below) | Validates parameters; enforces allow/deny lists; asks the user on risky actions |
+| `PostToolUse` | Formatter, linter, and rule-check scripts | Auto-format, lint, IDE diagnostics, hook-enforced rule checks (no-discards, secret patterns, hardcoded creds) |
+| `PreCompact` | `pre-compact-council-brief.js`, `pre-compact.js` | Persists running plan and intermediate state to durable memory |
+| `Stop` | `check-console-log.js`, `docs-sync-gate.js` | Final verification of touched files; surfaces remaining gaps |
+| `SessionEnd` | `session-end.js`, `evaluate-session.js` | Persists learnings, evaluates patterns, logs telemetry |
+| `PostCompact` | `post-compact-memory-reload.js` | Reloads memory and context after compaction |
+| `SubagentStop` | `subagent-verification-gate.js` | Verifies subagent parameters on completion |
+| `PostToolUseFailure` | `tool-failure-recorder.js` | Records tool failures for cross-session learning |
+| `PreModelSwitch` | `model-ladder-gate.js` | Enforces model tier policy before any model switch |
+| `TaskCompleted` | `task-completion-gate.js` | Validates task completion criteria |
+| `PermissionDenied` | `permission-denied-audit.js` | Audits permission denials for security review |
+
+## Hook inventory
+
+### PreToolUse hooks
+
+These hooks fire before a tool call executes. A non-zero exit blocks the tool call entirely.
+
+| Script | Tool matcher | What it enforces |
+| --- | --- | --- |
+| `model-ladder-gate.js` | `Agent\|Task`, `PreModelSwitch` | Model tier selection per the user's model ladder policy (opus for coding/reviewing/planning, sonnet for verification, haiku for mechanical doc work only) |
+| `destructive-command-gate.js` | `Bash` | Blocks dangerous shell commands that could cause irreversible harm |
+| `dev-server-gate.js` | `Bash` | Prevents inappropriate dev server starts during automated sessions |
+| `one-plan-gate.js` | `Edit\|Write\|MultiEdit`, `Bash` | Enforces the single-plan-per-workspace rule; a second plan file is a bug |
+| `commit-gate.js` | `Bash` | Pre-commit validation: requires a verification gate to have run this turn, coverage to have been measured, the plan to be current, and docs to accompany code |
+| `pre-push-gate.js` | `Bash` | Blocks `git push` until `CLAUDE_PUSH_AUTHORIZED=yes` is set; blocks force-push to protected branches; blocks AI-attribution commit trailers |
+| `research-gate.js` | `Edit\|Write` | Enforces the official-docs-first rule before writing new code |
+| `intake-gate.js` | `Edit\|Write\|MultiEdit` | Task intake validation per `task-intake-due-diligence.md` |
+| `payload-gate.js` | `Edit\|Write\|MultiEdit` | Validates external payloads before they reach the file system |
+| `pre-write-governance-sweep.js` | `Write` | Governance sweep before any new file is written |
+| `supersede-proof.js` | `Edit\|Write\|MultiEdit` | Validates that supersession proof exists when replacing an existing implementation |
+| `deferral-gate.js` | `Edit\|Write\|MultiEdit` | Catches deferred verification — blocks edits whose verification is scheduled for a later turn |
+| `test-coverage-gate.js` | `Edit\|Write\|MultiEdit` | Enforces coverage thresholds; coverage is a measurement, never an estimate |
+| `suggest-compact.js` | `Edit\|Write` | Suggests compaction when context window is large |
+
+### PostToolUse hooks
+
+These hooks fire after a tool call completes. Exit 2 returns the error to the agent, which forces a corrective edit.
+
+| Script | Tool matcher | What it enforces |
+| --- | --- | --- |
+| `post-edit-no-discards.js` | `Edit\|Write` | Rejects banned patterns: underscore discards, placeholder markers, linter suppressions, hardcoded credentials, raw color literals, empty catch blocks, and more |
+| `post-edit-format.js` | `Edit` | Auto-formats the file after every edit |
+| `post-edit-typecheck.js` | `Edit` | Runs type-checking after every edit |
+| `post-edit-console-warn.js` | `Edit` | Warns on `console.log` usage in production source |
+| `post-edit-ux-writing.js` | `Edit\|Write` | UX writing quality check on user-facing strings |
+| `test-coverage-marker.js` | `Bash` | Records that coverage was measured this session |
+| `docs-sync-marker.js` | `Edit\|Write\|MultiEdit` | Marks that a source edit occurred, for the docs-sync gate to check at Stop |
+| `supersede-proof-marker.js` | `Edit\|Write\|MultiEdit` | Records supersession proof after it is validated |
+| `parity-gate.js` | `Edit\|Write\|MultiEdit` | Competitive parity check — flags when a change falls behind a known reference implementation |
+| `research-marker.js` | `WebSearch\|WebFetch` | Marks that research was performed this session, satisfying the official-docs-first gate |
+| `intake-marker.js` | `TodoWrite` | Records that task intake occurred when a todo is written |
+| `gate-marker.js` | `Bash` | Records that a verification gate (build/test/lint) ran this session |
+| `payload-marker.js` | `Bash` | Records payload handling for audit |
+
+### Session lifecycle hooks
+
+| Script | Event | What it does |
+| --- | --- | --- |
+| `session-start.js` | `SessionStart` | Loads the most recent session summary into context; surfaces available session aliases and learned skills; reports the detected package manager |
+| `session-end.js` | `SessionEnd` | Reads the session transcript; extracts user messages, tools used, and files modified; writes a structured session summary to `~/.claude/sessions/` for cross-session continuity |
+| `pre-compact.js` | `PreCompact` | Saves compact handoff state before the conversation is compacted |
+| `pre-compact-council-brief.js` | `PreCompact` | Builds a structured ~2 KB preservation brief for the five Core Council Divisions; writes it to `~/.claude/sessions/<id>-precompact-brief.md` and appends it to the active session `.tmp` so the compaction summariser sees it |
+| `post-compact-memory-reload.js` | `PostCompact` | Reloads memory and workspace context after compaction completes |
+| `suggest-compact.js` | `PreToolUse` (Edit\|Write) | Suggests compaction when the context window approaches the `autoCompactWindow` threshold (100,000 tokens) |
+| `evaluate-session.js` | `SessionEnd` | Evaluates session quality patterns for the continuous learning loop |
+| `tool-failure-recorder.js` | `PostToolUseFailure` | Records tool failures to `audits/learning-events.jsonl` for cross-session learning |
+| `permission-denied-audit.js` | `PermissionDenied` | Audits every permission denial for security review |
+| `model-exhaustion-marker.js` | `PreModelSwitch` | Marks model exhaustion events for telemetry |
+
+## Deep dive: `post-edit-no-discards.js`
+
+`post-edit-no-discards.js` is the zero-tolerance mechanical coding rule enforcer. It runs after every `Edit` or `Write` tool call and exits with status 2 if the resulting file contains any banned pattern. Claude Code surfaces the stderr report to the agent in the same turn, forcing a corrective edit before any other work continues.
+
+The hook's rule manifest lives in `scripts/hooks/lib/no-discards-rules.js`. Patterns enforced include:
+
+| Rule ID | Level | What it checks |
+| --- | --- | --- |
+| `underscore-discard` | block | `_, ` / `, _ :=` / `_ =` return-value discards in Go, TypeScript/JavaScript, and Python |
+| `expr-statement-discard` | block | Bare `find()`/`fetch()`/`lookup()`/`parse()`/`compute()`/`calculate()`/`query()` calls whose return value is dropped |
+| `placeholder-marker` | block | `TODO`, `FIXME`, `XXX`, `BUG`, `HACK`, `KLUDGE`, `WORKAROUND`, `NOTE` markers in production source, Markdown, and CSS |
+| `scaffold-deferral` | block | Comments containing `scaffold only`, `stub for now`, `placeholder implementation`, `implement later` in production code |
+| `suppression` | block | `// nolint`, `// eslint-disable`, `// @ts-ignore`, `// @ts-expect-error`, `# noqa`, `# type: ignore`, `# pragma: no cover`, `# rubocop:disable` |
+| `task-pointer` | block | Comments that reference plan IDs (`plan B2`, `Phase 3`, `GAP-9`, `Wave A`, `P11.W2.G2`) rather than stating the WHY |
+| `raw-color` | block | Hex (`#fff`), `rgb()`, `hsl()`, `oklch()` literals in UI components and CSS outside a `--token` definition |
+| `console-log` | block | `console.log(` in production JavaScript/TypeScript source |
+| `hardcoded-secret` | block | API key prefixes (`sk-proj-`, `sk_live_`, `ghp_`, `xoxb-`, `AKIA`), AWS secrets, Bearer JWT tokens, and PEM private key headers |
+| `go-test-naming` | block | Go test functions named `Test_Foo_Bar` instead of using `t.Run` subtests |
+| `merge-conflict` | block | Leftover `<<<<<<<` / `>>>>>>>` conflict markers in any file |
+| `empty-catch` | block | Empty `catch` blocks in JavaScript/TypeScript that swallow errors silently |
+| `silent-catch` | block | `.catch(() => {})` or `.catch(() => null)` patterns that discard the error |
+| `silent-except` | block | Python `except:` or `except Exception:` blocks whose body is only `pass` or `...` |
+| `important` | warn | `!important` in CSS/UI files (soft warning — bypasses design tokens) |
+| `size-budget` | warn | Files that exceed their own declared `// Size budget:` comment |
+| `file-too-large` | warn | Production source files past 800 lines with no declared budget |
+
+The hook never scans files under `.claude/scripts/hooks/` itself — the enforcement tooling necessarily contains the banned patterns as definitions and documentation.
+
+**Operator override**: `export CLAUDE_NO_DISCARDS_HOOK=off` skips the check. Intended for bulk-import of legacy code. The agent must never set this variable itself.
+
+## Wiring: how hooks are registered in `settings.json`
+
+Hooks are declared in `~/.claude/settings.json` under the `hooks` key. Each entry maps a lifecycle event to an array of matchers and their associated commands:
+
+```json
+{
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Agent|Task",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/scripts/hooks/model-ladder-gate.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/scripts/hooks/dev-server-gate.js\""
+          },
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/scripts/hooks/commit-gate.js\""
+          }
+        ]
+      },
+      {
+        "matcher": "Edit|Write",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/scripts/hooks/post-edit-no-discards.js\""
+          }
+        ]
+      }
+    ],
+    "PreCompact": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/scripts/hooks/pre-compact-council-brief.js\""
+          }
+        ]
+      }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/scripts/hooks/session-start.js\""
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "node \"$HOME/.claude/scripts/hooks/docs-sync-gate.js\"",
+            "timeout": 10
+          }
+        ]
+      }
+    ]
+  }
+}
+```
+
+The `matcher` field is a pipe-separated list of tool names, or `*` for all events. Multiple hook arrays for the same event and matcher run in order. A hook that exits non-zero blocks the tool call for `PreToolUse`, or forces Claude to continue and address the issue for `PostToolUse` exit 2.
+
+<Warning>
+The Council's quality gates are **mechanical, not advisory**. Fourteen hook-enforced gates fire automatically at lifecycle events. When a gate exits non-zero, the tool call is blocked or Claude is forced to fix the violation before continuing — there is no path to silently drift past a rule. Do not attempt to set override environment variables from within agent code; only the operator (you, in your shell) can set bypass variables such as `CLAUDE_NO_DISCARDS_HOOK=off`, `CLAUDE_PUSH_AUTHORIZED=yes`, or `CLAUDE_COMMIT_GATE=off`.
+</Warning>

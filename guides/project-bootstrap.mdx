@@ -1,0 +1,125 @@
+---
+title: "Bootstrap a New Project with The Claude Council"
+sidebarTitle: "Project Bootstrap"
+description: "How The Claude Council auto-scaffolds a workspace .claude/ directory with rules, plans, memory, and audits — and how to customize it for your project."
+---
+
+Every workspace gets its own `.claude/` scaffold when the first non-trivial Council-mediated task begins. Project specifics — vendor tables, tech stack rules, active plans, and workspace memories — live there. The global `~/.claude/` stays pure: only abstract principles, no project names, no vendor identifiers, no session-specific dates. This split is what makes the Council composable across an unlimited number of projects without one project's specifics polluting another.
+
+## Why workspaces have their own `.claude/`
+
+Global rules contain only pure guidance. Without the workspace split, two failure modes occur:
+
+1. **Global pollution** — project-specific learnings leak into global, polluting the shared surface for every other project. A rule that says "use the `payments-v2` Stripe webhook endpoint" has no business being in a file that every project loads.
+2. **Lost cross-project patterns** — broadly useful patterns land in one workspace and never get shared. A timeout-retry pattern discovered in project A that would benefit every API project never makes it to global.
+
+The fix is mechanical: every workspace has its own `.claude/`; project specifics live there; global stays pure. Patterns observed in two or more workspaces are eligible for promotion to global; global rules consistently contradicted in practice are flagged for demotion review.
+
+## When scaffolding triggers
+
+Per `project-scoped-artifacts.md`, a workspace gets its `.claude/` scaffold when **any** of these conditions is met:
+
+1. A non-trivial Council-mediated task starts in a workspace with no `.claude/` directory yet.
+2. A multi-file refactor, new feature, or integration begins.
+3. A `git init` happens in a new directory and Claude is used for the first commits.
+
+Trivial work — a single-line fix, a typo correction, a config tweak — does not trigger scaffolding. Trivial work uses inherited global rules only.
+
+## The canonical scaffold
+
+When the agent creates a new workspace scaffold, it copies from `~/.claude/templates/project-claude-scaffold/` and customises `CLAUDE.md` with the project name and detected tech stack:
+
+```text
+<workspace>/.claude/
+├── CLAUDE.md                  # workspace-level rules + vendor table
+├── README.md                  # how this .claude/ is organised
+├── settings.json              # workspace-scoped settings (optional)
+├── settings.local.json        # per-user overrides (gitignored)
+├── .gitignore                 # excludes settings.local.json, audits/*.jsonl, etc.
+├── rules/                     # workspace-specific rules (extend global)
+│   ├── 00-index.md
+│   └── <rule>.md
+├── skills/                    # workspace-specific skills
+│   └── <skill>/SKILL.md
+├── agents/                    # workspace-specific agents (rare)
+│   └── <agent>.md
+├── plans/                     # multi-phase plan files for this project
+│   └── <slug>.md
+├── memory/                    # workspace-specific memories
+│   ├── MEMORY.md              # index of memory files (one pointer per file)
+│   └── feedback_*.md          # individual memory files
+└── audits/                    # security audits + learning events
+    ├── learning-events.jsonl
+    ├── bypass-log.jsonl
+    └── <date>/                # dated audit reports
+```
+
+| Entry | Purpose |
+| --- | --- |
+| `CLAUDE.md` | Workspace-level orchestrator: tech stack declaration, vendor table, links to workspace rules. Layered on top of global — strictest rule wins on conflict. |
+| `README.md` | Human-readable index of how this `.claude/` is organised and what each subdirectory contains. |
+| `settings.json` | Workspace-scoped Claude Code settings. Overrides apply to this workspace only. |
+| `settings.local.json` | Per-user overrides, gitignored. Use for personal preferences that should not be committed. |
+| `.gitignore` | Excludes `settings.local.json`, `audits/*.jsonl`, and other per-user or per-session state from version control. |
+| `rules/` | Project-specific rules that extend global guidance. May raise thresholds (stricter) but must not lower them. |
+| `skills/` | Project-specific skills for domain patterns unique to this codebase. Rare — prefer global skills. |
+| `agents/` | Project-specific agent definitions. Very rare — prefer global agents. |
+| `plans/` | Multi-phase plan files for this project. One active plan at a time, named on the `Active plan:` line in `MEMORY.md`. |
+| `memory/` | Workspace memories: an index (`MEMORY.md`) plus individual memory files. |
+| `audits/` | Append-only audit streams: learning events and bypass log. Gitignored but durable per-workspace state. |
+
+## Memory system
+
+The workspace memory directory (`memory/`) holds project-scoped knowledge across three logical categories:
+
+| Subdirectory / file type | What goes here |
+| --- | --- |
+| `MEMORY.md` | Index file — one-line pointer per memory file. Contains the `Active plan:` line that tells every Council gate which plan file belongs to this project. Not a memory itself; never stores substantive content. |
+| `feedback_*.md` | Individual memory files produced by the continuous learning loop. Each carries frontmatter with `name`, `description`, and `metadata.type`. Feedback from sessions, learned patterns, resolved ambiguities. |
+| `project/` (optional) | Longer-lived project knowledge: domain model notes, vendor integration details, architecture decisions. |
+| `reference/` (optional) | Reference material specific to this project: API endpoint tables, environment variable inventories, schema summaries. |
+
+Progress belongs in the plan, never in memory. Memory is loaded at session start and survives compaction; the plan is the source of truth for what is done and what remains.
+
+## Audits
+
+Two append-only `.jsonl` streams live in `<workspace>/.claude/audits/`:
+
+- **`learning-events.jsonl`** — every Council-mediated task emits at least one learning-candidate event per `continuous-learning-mandate.md`. Candidates are batched and surfaced to the user for approval; approved candidates update the relevant artifact in the same session.
+- **`bypass-log.jsonl`** — any attempt to bypass the Council is logged (and the Council convenes anyway) per `council-default.md`.
+
+Both files are gitignored in the working tree but kept as durable per-workspace state for the continuous learning sweep.
+
+## How project rules extend global
+
+Workspace rules layer on top of global rules additively. The inheritance model has five hard constraints:
+
+1. **Classify before writing.** Every new rule is classified as global or project before the first character is typed.
+2. **Project rules ADD to global.** They may raise thresholds (stricter) but must not lower them.
+3. **Conflicts: strictest wins.** A workspace rule that lowers a threshold is a bug in the workspace file. The assistant flags it and does not apply it.
+4. **Project specifics belong in projects.** Vendor names, file paths, schema fields, deployment shapes, incident details — never in global rules; always in workspace rules.
+5. **Cross-project patterns get promoted.** A pattern that appears in two or more workspaces is eligible for promotion to global. The agent surfaces the candidate via `AskUserQuestion`: "This rule appears in workspaces A and B. Promote to global?"
+
+## Continuous learning
+
+Every Council-mediated task produces learning candidates that land in `audits/learning-events.jsonl`. The `continuous-learning-mandate.md` rule and the `continuous-learning-v2` skill close the loop: candidates are batched, surfaced to the user, and approved candidates update the artifact in the same session.
+
+Promotion and demotion paths:
+
+- **Workspace → global (promotion):** A pattern appearing in two or more workspaces triggers an `AskUserQuestion`. On approval, the generic principle is extracted (every project-specific reference is stripped), written to `~/.claude/rules/common/<name>.md`, and the workspace copies are replaced with one-line redirects.
+- **Global → workspace (demotion):** A global rule that turns out to be workspace-specific is surfaced for demotion. On approval, it moves to `<workspace>/.claude/rules/` and a redirect stub replaces it in global.
+
+## The `/setup-pm` command
+
+Run `/setup-pm` in any workspace session to initialize project memory for a new project. The command:
+
+1. Detects the tech stack from manifest files (`package.json`, `go.mod`, `pyproject.toml`, `Cargo.toml`, etc.).
+2. Creates the `memory/MEMORY.md` index with the detected stack and an `Active plan:` line pointing at the workspace's plan file.
+3. Scaffolds the `plans/` directory with a starter plan template.
+4. Primes the `audits/` directory with empty `.jsonl` streams.
+
+The detected stack drives the initial workspace `CLAUDE.md`: which Council divisions auto-engage, which skills auto-fire, and which agents are most relevant.
+
+<Tip>
+Do not put your repository clone directly on a workspace's walk-up path for `~/.claude/`. The agent discovers the workspace `.claude/` by walking up from the current working directory — if your global `~/.claude/` sits between your repo root and the filesystem root, the walk-up may find global context where it should find workspace context. Keep global at `~/.claude/` and workspace at `<repo-root>/.claude/`, with no intermediate `.claude/` directories in between.
+</Tip>

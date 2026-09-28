@@ -1,0 +1,168 @@
+---
+title: "Install The Claude Council on Codex CLI"
+sidebarTitle: "Codex"
+description: "Add Council skills, agents, and hooks to Codex CLI using the native Python installer — without replacing your existing configuration or Claude installation."
+---
+
+The native Codex installer adds Council guidance, skills, specialist agents, and a small set of native hooks alongside your existing Codex setup. It does not replace Codex configuration or modify your Claude installation. The installer works from a complete clone of the repository and leaves every unrelated file untouched. Python 3.11 or later and Git are required.
+
+## Prerequisites
+
+- Python 3.11 or later (`python3 --version`)
+- Git
+- A complete clone of the repository: `git clone https://github.com/Nmor/the-claude-council.git`
+
+## Install
+
+<Steps>
+  <Step title="Dry run">
+    Preview what the installer will do without making any changes:
+
+    ```bash
+    cd the-claude-council
+    python3 bootstrap/codex.py install --dry-run
+    ```
+
+    On Windows, use `py -3.11` (or a newer Python) instead of `python3`.
+  </Step>
+  <Step title="Install">
+    Run the installer:
+
+    ```bash
+    python3 bootstrap/codex.py install
+    ```
+
+    The installer resolves the Codex home in this order: the `--home PATH` flag, then the `CODEX_HOME` environment variable, then `~/.codex`. To use a non-default location, pass `--home`:
+
+    ```bash
+    python3 bootstrap/codex.py install --home /path/to/codex-home
+    ```
+  </Step>
+  <Step title="Verify">
+    Confirm installed file integrity and native metadata:
+
+    ```bash
+    python3 bootstrap/codex.py verify
+    ```
+
+    `verify` checks installed file integrity and native metadata. It does **not** prove that hooks are trusted, that an agent has run, or that project tests passed. An unavailable hook is a limitation to report, never an implied passing gate.
+  </Step>
+  <Step title="Start a fresh session">
+    Start a fresh Codex session so the global instructions and agent definitions load. Use `$council` for the main workflow and catalog.
+  </Step>
+</Steps>
+
+## Install options
+
+| Flag | Default | Purpose |
+| --- | --- | --- |
+| `--home PATH` | `CODEX_HOME` or `~/.codex` | Select a different Codex home directory |
+| `--skill-profile full` | `compact` | Expose all 153 skill entrypoints instead of the default single `council` router |
+| `--project PATH` | — | Register a project directory for plan mapping (repeatable) |
+| `--plan PATH` | — | Register an existing plan for all `--project` directories |
+| `--dry-run` | — | Preview changes without writing anything |
+
+Compact discovery is the default: one `council` skill, the complete source catalog, and all 39 specialist roles. The full profile adds `council-*` namespaced entrypoints for every skill. Later installs retain the selected profile; installations without profile metadata migrate to compact unless full is explicit.
+
+## Review hooks
+
+<Warning>
+**CRITICAL — open `/hooks` in Codex and inspect the five Council command hooks before trusting them.** The hooks invoke the installed `council/hooks.py` with the installation's Python interpreter. New or changed definitions remain inactive until reviewed and trusted. The installer does **not** edit trust records, bypass review, or change permissions. Do not trust these hooks without reading what they do.
+</Warning>
+
+The hooks are supplemental checks, not a security boundary or a shell parser. Hosted web tools and some specialized tool paths may not emit hook events. Arbitrary shell or script writes cannot be completely policed by patch hooks. Do not substitute hook feedback for the actual tests, review, permissions, or single-plan working agreement.
+
+## Plan mapping
+
+Register an existing plan for one or more project directories:
+
+```bash
+python3 bootstrap/codex.py install \
+  --project /path/to/backend \
+  --project /path/to/frontend \
+  --plan /path/to/existing-plan.md
+```
+
+The installer validates the file and records pointers in `council/projects.json`. It does not create, copy, or rewrite a plan. The longest matching project root wins; unrelated projects do not inherit another project's plan. Re-run the command to change a mapping. Read and update that same plan for cross-agent handoffs, including worktree, commits, evidence, pending checks, and the next executable action.
+
+## Native compatibility contract
+
+This section governs how imported Council references are used in Codex. Higher-priority instructions and the user's scope and authorization always govern.
+
+| Source capability | Codex adaptation |
+| --- | --- |
+| Council workflow and Floor | Concise managed `AGENTS.md` block; complete rules available on demand |
+| 119 tracked skills | Full source/reference trees in the catalog; `council-*` entrypoints in full profile |
+| 33 command workflows | Catalog routes; full profile adds `council-command-*` entrypoints |
+| 39 specialist agents | Native TOML roles with embedded guidance and inherited parent model |
+| Claude `paths:` activation | Explicit skill/catalog selection; no claim of automatic file-trigger loading |
+| Model ladder/exhaustion | No Claude model overrides or exhaustion hook emulation |
+| `PreToolUse` | Native command advisories and supported patch checks for an existing plan |
+| `PostToolUse` | Completion-aware command feedback; invocation is never passing-test evidence |
+| `SessionStart`, `PreCompact`, `Stop` | Project-scoped plan and handoff reminders; no Claude transcript parsing |
+| Formatting, typechecking, research/intake/coverage markers | Manual task checks; Claude hook scripts are not registered |
+| `TaskCompleted`, `PreModelSwitch`, `PermissionDenied`, failure hooks | Not registered; no unsupported-event parity claim |
+| Session learning/transcript audits | Not automatically ported; keep durable evidence in the existing plan |
+
+Source rules do not justify extra approval requests, model overrides, new plans, messages, pushes, deployment, or configuration changes beyond the requested work. Use available native tools for the intent of imported procedures. Claude names such as `Task`, `TodoWrite`, `WebSearch`, `Read`, `Edit`, and slash commands are source conventions, not promises that those tools exist. Work locally by default. Justify at most one bounded independent helper at a time.
+
+**Do not execute archived Claude hooks, installers, or scripts as Codex automation.** The source archive is reference material. Procedures specifically about Claude configuration, model exhaustion, MCP servers, or external services require a separate native implementation or an explicit, authorized task.
+
+## What the installer does NOT configure
+
+The installer is intentionally scoped. It never sets:
+
+- Model selection or model overrides
+- MCP server configuration
+- Notification settings
+- Permission records or trust grants
+- Plugin configuration
+
+## Installed layout
+
+```text
+<codex-home>/
+  AGENTS.md                    # managed block; original content retained
+  hooks.json                   # merged definitions; unrelated hooks retained
+  skills/council*/SKILL.md     # main router and namespaced entrypoints
+  agents/council-*.toml        # native specialist definitions
+  council/
+    catalog.md                 # searchable routing when discovery is truncated
+    resources/                 # allowlisted tracked guidance and full references
+    hooks.py                   # native dispatcher
+    projects.json              # existing-plan pointers, not another plan
+    manifest.json              # private hashes and original shared-file backups
+```
+
+The private manifest records hashes and original shared-file contents. Changes to managed files — including the shared `AGENTS.md` and `hooks.json` — cause upgrade or removal to stop rather than overwrite user edits. Save and reconcile those edits before retrying; there is deliberately no force-overwrite option.
+
+## Uninstall
+
+```bash
+python3 bootstrap/codex.py uninstall --dry-run
+python3 bootstrap/codex.py uninstall
+```
+
+Removal restores original shared files and removes only managed files. Empty folders or native runtime state may remain. The private manifest contains backups of original shared files — do not publish it.
+
+<Warning>
+**`AGENTS.override.md` must be reconciled before installing.** An existing `AGENTS.override.md` would shadow the installed `AGENTS.md` block. The installer stops if it detects one. Reconcile or remove `AGENTS.override.md` first, then re-run the installer.
+</Warning>
+
+## Adapter version note
+
+The Council adapter was tested with Codex CLI `0.155.0-alpha.16.3`. Older clients may not support the same agent and hook configuration. Check your client's actual capabilities before treating installed files as active features. After updating the checkout, re-run `install` and `verify` — installation is idempotent.
+
+## Running the test suite
+
+```bash
+python3 -m unittest discover -s tests/codex -v
+```
+
+The optional real-client check runs skill and hook discovery without a model turn or hook-trust bypass:
+
+```bash
+COUNCIL_CODEX_BIN=/path/to/codex python3 -m unittest discover -s tests/codex -v
+```
+
+Tests cover preservation, collisions, repeat installation, rollback, uninstall, metadata, project mappings, and native hook fixtures.

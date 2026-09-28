@@ -1,0 +1,91 @@
+{
+  "projectType": "general",
+  "projectName": "The Claude Council",
+  "projectDescription": "A principal-level, 16-division multi-agent configuration layer for Claude Code that provides drop-in ~/.claude/ setup with Floor and Library rules, skills, specialist agents, slash commands, and hook-enforced quality gates.",
+  "theme": "maple",
+  "primaryColor": "#d57253",
+  "lightColor": "#734c3e",
+  "darkColor": "#34342c",
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Documentation",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "installation"
+            ]
+          },
+          {
+            "group": "Core Concepts",
+            "pages": [
+              "concepts/architecture",
+              "concepts/council-protocol",
+              "concepts/context-and-cost"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/rules",
+              "reference/skills",
+              "reference/agents",
+              "reference/commands",
+              "reference/hooks"
+            ]
+          },
+          {
+            "group": "Guides",
+            "pages": [
+              "guides/project-bootstrap",
+              "guides/codex",
+              "guides/contributing"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  "keyFeatures": [
+    "16-division multi-agent Council (5 Core + 11 Extended) covering architecture, security, compliance, ops, data, finance, ethics, and more",
+    "26 always-loaded Floor rules and 187 on-demand Library rules enforcing principal-level standards",
+    "119 skills for reusable patterns across code quality, security, backend, infrastructure, finance, and AI/ML",
+    "39 specialist agents with explicit veto authority and model-tier selection (Opus/Sonnet/Haiku/Fable)",
+    "33 slash commands for code review, TDD, refactoring, build fixes, multi-agent orchestration, and learning",
+    "25+ hook scripts providing mechanical quality gates at every lifecycle event (PreToolUse, PostToolUse, SessionStart, PreCompact, Stop)",
+    "Cross-IDE support for VS Code, Cursor, Windsurf, JetBrains, and terminal editors",
+    "Native Codex CLI installer with hook review, plan mapping, and lifecycle compatibility",
+    "Continuous learning loop that promotes cross-project patterns to global via audits/learning-events.jsonl",
+    "Cross-platform install: macOS/Linux (bash) and Windows (PowerShell native, no WSL2 required)"
+  ],
+  "publicApiSurface": [
+    "bootstrap/install.sh — macOS/Linux/WSL2 installer",
+    "bootstrap/install.ps1 — Windows PowerShell installer",
+    "bootstrap/verify.sh / verify.ps1 — post-install integrity verifier",
+    "bootstrap/uninstall.sh / uninstall.ps1 — reversible uninstaller",
+    "bootstrap/context.py — additive context migration for existing Claude installs",
+    "bootstrap/codex.py install / verify / uninstall — native Codex lifecycle installer",
+    "/code-review — comprehensive security and quality review slash command",
+    "/learn — extract reusable patterns from current session",
+    "/verify — run build, lint, type check, tests, and code-graph validation",
+    "/evolve — evolve existing rules and skills based on session learnings",
+    "/plan — create or update a structured implementation plan",
+    "/tdd — test-driven development workflow",
+    "/build-fix — diagnose and fix build errors",
+    "/e2e — end-to-end test runner command",
+    "/orchestrate — multi-agent orchestration workflow",
+    "/instinct-status / instinct-export / instinct-import — manage learned instincts",
+    "/checkpoint — save session checkpoint to plan memory",
+    "/refactor-clean — dead code removal and dependency cleanup",
+    "agents/architect.md — system design and ADR specialist",
+    "agents/security-reviewer.md — OWASP/ASVS/STRIDE auditor with VETO authority",
+    "agents/compliance-reviewer.md — GDPR/HIPAA/PCI/SOC2 auditor with VETO authority",
+    "agents/code-reviewer.md — cross-language severity-based code review",
+    "agents/tdd-guide.md — test-first TDD workflow agent",
+    "agents/planner.md — phased delivery and dependency analysis",
+    "scripts/token-budget.mjs — measure and enforce context budget"
+  ]
+}

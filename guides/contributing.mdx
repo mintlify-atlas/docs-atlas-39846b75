@@ -1,0 +1,315 @@
+---
+title: "Contributing Rules, Skills, and Agents to The Claude Council"
+sidebarTitle: "Contributing"
+description: "How to add a rule, skill, or agent to The Claude Council — the template requirements, standards citations, CI gates, and PR process."
+---
+
+Every contribution to The Claude Council follows the principal-level mandate and passes through the same Council protocol it enforces. There are no shortcuts: the same quality bar — depth, cited, decisive — that every rule, skill, and agent must meet is applied to the PR that introduces it. The Council protocol reviews every contribution through Division 3 (Quality), Division 4 (Security), Division 6 (Compliance), Division 7 (UX), and Division 16 (Communications).
+
+## Quick start
+
+Run these commands before opening a PR. CI runs the same suite and will block the merge if anything is red.
+
+```bash
+# 1. Fork + clone
+git clone https://github.com/<your-fork>/the-claude-council.git
+cd the-claude-council
+
+# 2. Install hooks (reads .githooks/)
+git config core.hooksPath .githooks 2>/dev/null || true
+
+# 3. Run the local verifier suite — the same gate CI runs
+bash bootstrap/verify.sh --prefix "$PWD" --verbose
+bash tests/verify-link-integrity.sh
+bash tests/verify-no-orphans.sh
+bash tests/verify-standards-citations.sh
+
+# 4. Markdown + shell lint
+npx --yes markdownlint-cli2 "**/*.md" "#node_modules" "#sessions" \
+    "#projects" "#file-history"
+shellcheck -S style bootstrap/*.sh tests/*.sh
+```
+
+Expected output from `bootstrap/verify.sh`: 17/17 checks pass. All four verifiers must pass before you open the PR.
+
+## Choosing what to file
+
+| Kind of change | Use this template |
+| --- | --- |
+| Something is broken | `bug_report.yml` |
+| Existing rule / skill / agent needs an enhancement | `feature_request.yml` |
+| New rule / skill / agent / command (or major rewrite) | `skill_proposal.yml` |
+| Security vulnerability | `SECURITY.md` (private channel) |
+| Open-ended discussion / idea | GitHub Discussions |
+
+No blank issues. Templates collect the fields the maintainer needs to decide: standards citations, Council triggers, blast radius, rollback. A blank issue is a longer round-trip.
+
+## Read first
+
+Read these three documents before starting any contribution:
+
+1. **`ARCHITECTURE.md`** — understand how rules, skills, agents, and hooks compose into the Council protocol.
+2. **`COUNCIL.md`** — understand which division your contribution falls under and the tiebreaker matrix.
+3. **`rules/common/principal-level-mandate.md`** — the depth bar every artifact must meet.
+
+## Global vs project decision guide
+
+Per `rule-authoring-global-vs-project.md`:
+
+| Question | Answer → goes in |
+| --- | --- |
+| Is this guidance applicable to every codebase you work on? | Global (`rules/common/`, `skills/`, `agents/`) |
+| Is this guidance tied to a specific project's stack, vendor, architecture, or domain model? | Project (`<workspace>/.claude/rules/` etc.) |
+| Could it be split into a generic principle + a project-specific config? | Both — global principle + project config (canonical shape) |
+
+When in doubt: write the principle in global, the specifics in project.
+
+## Adding a rule
+
+<Steps>
+  <Step title="Pick the location">
+    - **Universal guidance** → `rules/common/<name>.md`
+    - **Language-specific extension** → `rules/<lang>/<name>.md`
+    - **Project-specific** → `<workspace>/.claude/rules/<name>.md`
+
+    Language rules extend the common rule with language-specific banned patterns and linter configs. They do not replace the common rule.
+  </Step>
+  <Step title="Follow the rule template">
+    Every rule carries this structure:
+
+    ````markdown
+    # <Rule Name>
+
+    > One-line summary. Companion to <sister rules>.
+
+    ## Core Principle
+
+    **One paragraph stating the principle in bold + the why.**
+
+    ## Hard rules
+
+    ### 1. <Banned pattern or required pattern>
+
+    Example showing WRONG and CORRECT shapes side-by-side.
+
+    ## Verification block
+
+    ```text
+    <Rule name> sweep (this turn):
+      - <check 1>: <result>
+      - <check 2>: <result>
+    ```
+
+    ## Cross-references
+
+    - [`<sister rule>.md`](<path>) — <one-line why>
+
+    ## Why this rule exists
+
+    The failure mode this rule prevents. The cost of getting it wrong
+    vs the cost of the rigor.
+
+    ## Learning hooks
+
+    **Signals to watch**:
+    - <observable signal that the rule is weakening>
+
+    **Refinement candidates**:
+    - <change that would strengthen the rule>
+    ````
+  </Step>
+  <Step title="Banned content for global rules">
+    Per the rule-authoring rules, global rules must never contain:
+
+    - Project, workspace, or vendor names — use abstract placeholders (`<workspace>`, `<project>`, `<vendor>`)
+    - Per-project file paths — abstract to the pattern, not the specific path
+    - Session-specific dates — "session 2026-05-26" or "Q4 incident" are forbidden in global
+    - Incident details that name a specific service, container, vendor, or runtime
+    - Vendor brand names from a specific project's vendor list
+  </Step>
+  <Step title="Cite ≥3 primary sources">
+    Every rule that depends on external standards cites the primary source with version and section:
+
+    - `WCAG 2.2 §1.4.3` (W3C Recommendation, Oct 2023)
+    - `OWASP ASVS 4.0.3 §2.1.7`
+    - `ISO/IEC 27001:2022 Annex A.8.7`
+    - `RFC 9110 §9.3.1`
+
+    Never Stack Overflow, never npm READMEs, never blog posts as the sole reference. Per `official-docs-first.md`.
+  </Step>
+  <Step title="Add anti-patterns table, cross-references, and verification checklist">
+    Every rule includes:
+
+    - An anti-patterns section: concrete wrong shapes with named correct alternatives
+    - Cross-references to sister rules and skills
+    - A verification checklist with concrete checks (not aspirational — each check has a green/red predicate)
+  </Step>
+  <Step title="Run the standards citation verifier">
+    ```bash
+    bash tests/verify-standards-citations.sh
+    ```
+
+    This verifier checks that every rule cites at least three primary sources matching the citation regex (see below). The PR is blocked if this check fails.
+  </Step>
+</Steps>
+
+## Adding a skill
+
+<Steps>
+  <Step title="Pick the cluster">
+    Skills live under `skills/<name>/SKILL.md`. The 13 clusters are: `code-quality`, `accessibility`, `security-compliance`, `finance-accounting`, `investment`, `AI/ML`, `design`, `org/management`, `infrastructure`, `industrial`, `structural engineering`, `innovation`, `interpersonal/research/history`. If none fits, propose a new cluster in your PR.
+  </Step>
+  <Step title="Follow the principal-level skill template">
+    Every skill carries:
+
+    ```markdown
+    # <Skill Name>
+
+    > Brief one-line mission statement.
+
+    ## Purpose
+
+    Why this skill exists. What problem class it solves. What it does
+    NOT solve (negative scope is as important as positive scope).
+
+    ## Standards Cited
+
+    Authoritative references with version + section:
+    - WCAG 2.2 §1.4.11
+    - OWASP ASVS 4.0.3 §2.2.1
+    - ISO/IEC 27001:2022 Annex A.8.7
+
+    ## When to Fire
+
+    Triggers: file globs, keywords, scope conditions, plan-tier impact.
+
+    ## Core Patterns
+
+    The principal-level patterns, with concrete examples, named
+    trade-offs, inflection points.
+
+    ## Anti-Patterns
+
+    What to reject + why + the named alternative.
+
+    ## Verification Checklist
+
+    Concrete checks (not aspirational). Each check has a green/red
+    predicate.
+
+    ## Cross-References
+
+    Sister rules, sister skills, agents that pair with this skill.
+
+    ## Why This Skill Exists
+
+    The failure mode this skill prevents. The cost of getting it
+    wrong vs the cost of the rigor.
+    ```
+  </Step>
+  <Step title="Meet the quality floor">
+    Every skill must reach:
+
+    - ≥ 500 words of substantive content (target 1500–3000 for complex domains)
+    - ≥ 3 authoritative standards citations with version and section
+    - ≥ 5 anti-patterns with named alternatives
+    - ≥ 1 verification checklist with concrete checks
+    - ≥ 3 cross-references to sister rules, skills, or agents
+    - Zero project-specific names, paths, or vendor identifiers
+    - Zero "shallow stub" language ("see X for details" without the details)
+  </Step>
+  <Step title="Add the file-type mapping">
+    If your skill should auto-fire on specific file types, add a row to `rules-library/common/auto-skills.md` under the relevant file-type section.
+  </Step>
+</Steps>
+
+## Adding an agent
+
+<Steps>
+  <Step title="Write the frontmatter">
+    ```yaml
+    ---
+    name: <kebab-case-name>
+    description: <one-line — what the agent does + when to use PROACTIVELY + domain ownership>
+    tools: [<list>]
+    model: opus | sonnet | haiku
+    ---
+    ```
+
+    Model selection per `performance.md`: **opus** for coding/reviewing/planning, **sonnet** for narrow-scope reviewers and verification loops, **haiku** for mechanical doc work only.
+  </Step>
+  <Step title="Include all required body sections">
+    Every agent's body must contain all ten of:
+
+    1. **Identity + mission** — one paragraph naming the principal-level mandate
+    2. **Global rules enforced** — explicit cross-references to global rules the agent applies
+    3. **Auto-fire triggers** or "When to engage" — file globs, keywords, scope conditions
+    4. **Decision authority** — veto / casting vote / advisory + rationale; for support agents, role within the Division
+    5. **Review checklist or workflow** — explicit checks with severity classification
+    6. **Standards cited** — version and section numbers, not vague references
+    7. **Output shape or severity/report template** — structured findings, not narrative
+    8. **Anti-patterns to reject** — concrete patterns with named alternatives
+    9. **Pairing model** — which other agents this works with on cross-cutting concerns
+    10. **When to escalate to user** — explicit triggers
+  </Step>
+  <Step title="Add the file-type mapping">
+    If your agent should auto-engage on specific file types, add a row to `rules-library/common/auto-skills.md` under the relevant file-type section's "Agents:" subsection.
+  </Step>
+  <Step title="Register with the Council Division">
+    Update `COUNCIL.md` and the relevant Division section in `CLAUDE.md` to list the new agent. No agent is active in the Council protocol until it appears in both files.
+  </Step>
+</Steps>
+
+## CI gates
+
+Every PR runs these gates. All must pass before merge:
+
+| Gate | Command | What it checks |
+| --- | --- | --- |
+| Integrity | `bash bootstrap/verify.sh` | 17/17 internal checks: file structure, cross-references, template conformance |
+| Link integrity | `bash tests/verify-link-integrity.sh` | Every cross-reference resolves to an existing file |
+| Orphan check | `bash tests/verify-no-orphans.sh` | No unreferenced files left dangling |
+| Standards citations | `bash tests/verify-standards-citations.sh` | Every rule cites ≥ 3 primary sources matching the citation regex |
+| Markdown lint | `npx markdownlint-cli2 "**/*.md"` | MD040 fenced code language, MD031 blanks around code, MD022 blanks around headings |
+| Shell lint | `shellcheck -S style bootstrap/*.sh tests/*.sh` | Style-level shellcheck on all bootstrap and test scripts |
+| Native adapter | (CI job) | Council Codex adapter installs cleanly on Linux, macOS, and Windows |
+| Context-budget regression | (CI job) | No skill or hook file exceeds its declared size budget |
+
+## Standards citation regex
+
+The `verify-standards-citations.sh` test checks every rule for at least three citations matching:
+
+```text
+(RFC [0-9]+|ISO/IEC|NIST|OWASP|WCAG|W3C|§|PEP [0-9]+|SLSA|CWE|JEP|SE-[0-9])
+```
+
+Examples of citations that match: `RFC 9110 §9.3.1`, `ISO/IEC 27001:2022`, `OWASP ASVS 4.0.3`, `WCAG 2.2 §1.4.3`, `NIST SP 800-63B`, `PEP 484`, `SLSA Level 2`, `CWE-79`, `SE-99`.
+
+## PR verification block
+
+Every PR includes a verification block per `verify-before-claim.md`:
+
+```text
+Verification (this PR):
+- markdownlint: 0 warnings
+- bootstrap/verify.sh: 17/17 pass
+- Link integrity: every cross-reference resolves
+- Standards citations: <count> primary sources cited
+- IDE diagnostics: 0
+```
+
+## Commit message format
+
+Per `semver.md`, commit messages follow Conventional Commits 1.0.0:
+
+- `feat: <description>` — MINOR bump (new rule / skill / agent)
+- `fix: <description>` — PATCH bump (correction to existing)
+- `docs: <description>` — PATCH (docs-only)
+- `chore: <description>` — no release
+- `feat!: <description>` — MAJOR bump (breaking change to a Council protocol)
+
+`BREAKING CHANGE:` in the commit body or `!` after the type triggers a MAJOR bump regardless of type prefix.
+
+<Note>
+The principal-level depth bar is not about length. A contribution must be **depth, cited, decisive** — it must articulate the failure mode it prevents, cite the authoritative standard that establishes why the failure matters, and give the agent a concrete decision procedure, not a general aspiration. "Follow best practices" is boilerplate. "Per OWASP ASVS 4.0.3 §2.1.7, passwords shorter than 12 characters must be rejected at the API layer with HTTP 400 — never silently truncated" is a rule. Every rule, skill, and agent in the Council holds to this standard, and every contribution is reviewed against it.
+</Note>

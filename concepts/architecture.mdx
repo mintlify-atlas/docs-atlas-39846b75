@@ -1,0 +1,122 @@
+---
+title: "How The Claude Council Is Structured and Composed"
+sidebarTitle: "Architecture"
+description: "The Claude Council composes five layers — CLAUDE.md, Floor rules, skills, specialist agents, and lifecycle hooks — into a mechanical, principal-level review system."
+---
+
+The Claude Council is not a single agent — it is a layered system of five primary surfaces that compose into a complete, mechanical review protocol. A concise working contract loaded at session start routes every prompt through the right combination of rules, skills, specialist agents, and hook-enforced gates. Each surface has a single responsibility: the orchestrator sets direction, the rules enforce principles, the skills supply patterns, the agents own expertise, and the hooks make compliance non-optional.
+
+## The Five Primary Surfaces
+
+<CardGroup cols={2}>
+  <Card title="CLAUDE.md — the orchestrator" icon="file-code">
+    Loaded at the start of every Claude Code session. Declares the concise working contract covering architecture, implementation, quality, security and testing. Manages scoped delegation, evidence reuse, the single active plan, and compact handoffs. Routes on-demand to detailed rules and specialist guidance when needed.
+  </Card>
+  <Card title="rules/common/ + rules-library/ — the principles" icon="scale-balanced">
+    Pure guidance: abstract principles, banned patterns, verification checklists, and cross-references. `rules/common/` holds 26 universal Floor rules that apply regardless of language. `rules-library/<lang>/` holds 187 on-demand Library rules extending common rules with language-specific banned patterns and linter configs. Project specifics live in `<workspace>/.claude/rules/`.
+  </Card>
+  <Card title="skills/ — the patterns" icon="puzzle-piece">
+    Reusable patterns and methodologies. Where a rule says "do not write X," a skill says "here is how to design Y." Skills span 13 domain clusters: code-quality, accessibility, security-compliance, finance-accounting, investment, AI/ML, design, org/management, infrastructure, industrial, structural engineering, innovation, interpersonal, and research/history. Selected by description, task relevance, or explicit invocation.
+  </Card>
+  <Card title="agents/ — the specialists" icon="users">
+    39 delegatable specialists, each with frontmatter declaring `name`, `description`, `tools`, and `model`. The Council protocol delegates to an agent when its expertise is needed. Every agent follows the principal-level mandate: identity + mission, declared global-rules enforcement, auto-fire triggers, decision authority, a review checklist, standards-cited references, structured output shape, anti-patterns to reject, pairing model, and escalation triggers.
+  </Card>
+  <Card title="hooks/ + scripts/hooks/ — the mechanical gates" icon="shield-check">
+    25 hook scripts that fire automatically at lifecycle events. Hooks turn rules into machinery: they make it impossible to silently drift past a rule. If a banned pattern lands in a `PostToolUse` diff, the hook blocks the edit and returns the error to the agent. Covers `SessionStart`, `UserPromptSubmit`, `PreToolUse`, `PostToolUse`, `PreCompact`, `Stop`, and `SessionEnd`.
+  </Card>
+  <Card title="bootstrap/ — cross-OS installer" icon="rocket">
+    Parallel install paths for macOS/Linux/WSL2 (bash) and Windows native PowerShell. Idempotent: any existing `~/.claude/` is moved aside to a timestamped backup before the new one lands. Includes reversible context migration, verification scripts, and Codex lifecycle support.
+  </Card>
+</CardGroup>
+
+## How Layers Compose: The Task Flow
+
+A non-trivial task flows through all five surfaces in a defined sequence. Each step is owned by a specific layer.
+
+1. **Prompt arrives** → `UserPromptSubmit` hook evaluates clarity. Vague prompts route through the `prompt-improver` skill, which runs the trigger-gated `task-intake-due-diligence` intake — an always-fire high-signal core plus the domain questions whose triggers match the task.
+2. **Council Phase 0 (Deep Research)** → online research, codebase exploration, primary-source citation per `official-docs-first.md`. Online research is mandatory across collection, planning, and implementation.
+3. **Council Phase 1 (Discussion)** → five Core Divisions speak in order. Extended Eleven auto-fire on trigger signals from `council-triggers.md`.
+4. **Council Phase 2 (Consensus)** → GO/NO-GO decision with the tiebreaker matrix applied if divisions disagree.
+5. **Council Phase 3 (Implementation)** → `tdd-guide` writes tests first, implementation writes code, `refactor-cleaner` sweeps, `security-reviewer` audits, `code-reviewer` reviews, `e2e-runner` validates, `doc-updater` documents.
+6. **Hooks fire continuously** during Phase 3 — every edit triggers `PostToolUse` checks for discards, suppressions, hardcoded credentials, raw colour literals, and merge-conflict markers.
+7. **Verification block** closes the task — same-turn proof per `verify-before-claim.md`.
+
+## Project Layering
+
+The repo's `claude-home/` directory is a one-to-one mirror of what gets installed to `~/.claude/`. Workspaces add their own `.claude/` directory on top with the same shape:
+
+```text
+<workspace>/.claude/
+├── CLAUDE.md                  # workspace-level rules + vendor table
+├── rules/                     # project-specific rules (extend global)
+├── skills/                    # project-specific skills
+├── agents/                    # project-specific agents (rare)
+├── plans/                     # workspace plans
+├── memory/                    # workspace memories (feedback/project/reference)
+└── audits/                    # workspace audits + learning events
+```
+
+Every workspace gets its scaffold on first significant Council-mediated work. The scaffold template lives at `~/.claude/templates/project-claude-scaffold/`.
+
+## Hook Lifecycle
+
+Hooks fire at seven lifecycle events, turning every session stage into a mechanical enforcement point.
+
+| Event | What runs |
+|---|---|
+| `SessionStart` | Loads workspace `CLAUDE.md`, primes context, surfaces workspace rules |
+| `UserPromptSubmit` | Prompt-improver evaluates clarity; vague prompts route through the `prompt-improver` skill |
+| `PreToolUse` | Validates parameters; enforces allow/deny lists; asks the user on risky actions |
+| `PostToolUse` | Auto-format, lint, IDE diagnostics, hook-enforced rule checks (no-discards, secret patterns, hardcoded creds) |
+| `PreCompact` | Persists running plan + intermediate state to durable memory |
+| `Stop` | Final verification of touched files; surfaces remaining gaps |
+| `SessionEnd` | Persists learnings, evaluates patterns, logs telemetry |
+
+## Cross-OS Support
+
+The repo is cross-platform by design. Two parallel bootstrap paths cover every supported environment — no additional tooling required.
+
+<CardGroup cols={2}>
+  <Card title="macOS / Linux / WSL2" icon="terminal">
+    ```bash
+    bash bootstrap/install.sh
+    bash bootstrap/verify.sh
+    ```
+  </Card>
+  <Card title="Windows (native PowerShell, no WSL2 required)" icon="windows">
+    ```powershell
+    .\bootstrap\install.ps1
+    .\bootstrap\verify.ps1
+    ```
+  </Card>
+</CardGroup>
+
+Both flows are fully native to their host platform. Windows users do not need WSL2 or Git Bash.
+
+## Continuous Learning
+
+Every Council-mediated task produces learning candidates that land in `audits/learning-events.jsonl`. The `continuous-learning-mandate.md` rule and the `continuous-learning-v2` skill close the loop: candidates are batched, surfaced to the user via `AskUserQuestion`, and approved candidates update the artifact in the same session.
+
+Patterns observed in two or more workspaces are eligible for promotion to global. Global rules contradicted in practice are flagged for demotion review.
+
+## Verification + Commit Policy
+
+Per `verify-before-claim.md`, every claim of completion attaches a same-turn verification block. The block is the proof — a claim without it is downgraded to "implemented — verification deferred to X" with a named unblock task.
+
+```text
+Verification (this turn):
+- tsc --noEmit: 0 errors
+- eslint <files>: 0 warnings
+- vitest run: PASS
+- IDE diagnostics: 0
+- proper-fixes audit: green
+- docs-sync gate: feature page exists; landing accurate
+```
+
+For multi-phase plans, the active plan file declares its `commit-policy` in the Context section. Three valid policies: `single` (one commit at end), `per-phase` (one per phase boundary), `per-task` (one per atomic task). No `git push` until the plan is complete and verified — narrow bug-fix exceptions require explicit user override.
+
+## Why This Shape
+
+The Council protocol exists because individual model output drifts toward the easiest plausible answer. Five divisions speaking in order with named tiebreakers force a different shape: every task gets architectural, implementation, quality, security, and testing input before code is written. The Extended Eleven divisions add compliance, UX, ops, data, finance, risk, strategy, people, ESG, ethics, and communications when their triggers match.
+
+The rules + skills + agents + hooks make the protocol mechanical rather than aspirational. The principal-level mandate ensures the contributions are deep, cited, and decisive — not boilerplate. Hooks make it impossible to bypass rules silently; the verification block closes every task with evidence rather than assertion.

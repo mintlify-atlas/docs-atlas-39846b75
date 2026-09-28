@@ -1,0 +1,231 @@
+---
+title: "Rules Catalog: Floor Rules and Library Rules Reference"
+sidebarTitle: "Rules"
+description: "Complete catalog of all 26 Floor rules and 187 Library rules shipped with The Claude Council, organized by cluster with purpose descriptions."
+---
+
+Rules are the principles the Council enforces. Every Council-mediated task applies the rules that match its file types and scope. There are two tiers: **Floor rules** — 26 concise files in `rules/common/` that are always loaded and active on every task — and **Library rules** — 187 on-demand files in `rules-library/` that are lazy-loaded when skill or agent invocations, file-type matches, or adaptive workflow conditions call for them. Floor rules encode the absolute baseline; Library rules carry the detailed standards references, language-specific guidance, and operational playbooks that would bloat the context budget if preloaded unconditionally. Per the global-vs-project classification rule, all rules in this catalog are pure guidance; project-specific facts live in `<workspace>/.claude/rules/`.
+
+<Note>
+**Rule counts**
+
+- **`rules/common/`** — 26 concise Floor rules. With `CLAUDE.md`, 19,428 bytes on 2026-09-28 (bytes/4 estimate: 4,857 tokens; not billed usage). Measure with `node scripts/token-budget.mjs --root . --check`.
+- **`rules-library/council-detail/`** — 27 preserved detailed references; read only relevant sections under the current adaptive workflow.
+- **`rules-library/common/`** — 60 lazy-loaded universal rules.
+- **`rules-library/<lang>/`** — 100 language rules across 18 subfolders (`bash`, `cpp`, `csharp`, `dart`, `dockerfile`, `golang`, `html-css`, `java`, `kotlin`, `lua`, `markdown`, `python`, `ruby`, `rust`, `sql`, `swift`, `typescript`, `yaml`).
+</Note>
+
+## Floor rules by cluster
+
+The clusters below catalog the Floor rules in `rules/common/` plus the lazy-loaded common rules in `rules-library/common/`. Language rules are listed separately under [Language-specific rules](#language-specific-rules).
+
+### Council + protocol
+
+| Rule | Purpose |
+| ---- | ------- |
+| `council-default.md` | Council is the default mode; no bypass surface |
+| `council-triggers.md` | Per-division engagement signals for the Extended Eleven |
+| `model-tier-selection.md` | Capability-aware model ladders per Council role — resolve to the best model AVAILABLE in this install (Fable→Opus→Sonnet→Haiku), graceful degradation, Fable excluded from security |
+| `agents.md` | Agent orchestration + parallel-task execution |
+| `auto-skills.md` | File-to-skill-and-agent mapping (auto-fire on file type) |
+| `hooks.md` | Hook lifecycle — Session/Prompt/PreTool/PostTool/PreCompact/Stop/SessionEnd |
+| `principal-level-mandate.md` | Every agent + skill + rule operates at principal level |
+| `performance.md` | Performance guidance (context window, thinking/effort, build troubleshooting); defers model selection to `model-tier-selection.md` |
+
+### Planning + verification
+
+| Rule | Purpose |
+| ---- | ------- |
+| `task-intake-due-diligence.md` | Trigger-gated intake before any non-trivial task |
+| `plan-task-breakdown.md` | Long list of small atomic tasks; mandatory bloat-removal phase |
+| `plan-execution-progress.md` | Structured per-phase progress updates |
+| `one-plan-per-workspace.md` | One plan file per workspace, named by its memory's `Active plan:` line; new work enriches it (`one-plan-gate.js`) |
+| `plan-completion-before-push.md` | Active plan declares commit-policy; no push until plan complete |
+| `verify-before-claim.md` | Every completion claim preceded by same-turn verification |
+| `validate-payloads-before-coding.md` | Validate any external payload against the real contract before writing the code that produces / consumes it |
+| `no-overclaim.md` | Reserve "done" / "shipped" / "complete" for verified states |
+| `post-phase-retrospective-review.md` | Canonical single source: the five-step sweep at every phase boundary — forward verify → retrospective re-verify all prior phases (different gates) → wiring closure → multi-division adversarial audit → capture follow-ups. Consolidates the former `phase-retrospective-sweep.md` + `principal-level-review-after-each-phase.md` (now redirect stubs). |
+| `local-testability.md` | Every change locally testable BEFORE writing |
+| `done-criteria.md` | Service-migration done checklist |
+| `proper-fixes-first.md` | Root-cause fixes; no shortcuts |
+| `diagnose-before-fixing.md` | Prove the root cause on the LIVE path before editing; instrument first when blind |
+| `competitive-parity-per-phase.md` | Step 6 of every phase close — audit what shipped against the leading competitors |
+
+### Code quality + style
+
+| Rule | Purpose |
+| ---- | ------- |
+| `coding-style.md` | Universal code style baseline |
+| `patterns.md` | Architectural patterns (repository, response envelope, etc.) |
+| `reuse-first.md` | Sweep before write; rule of three; extend never fork |
+| `extreme-lint-policy.md` | Strictest linters; thresholds tightened beyond defaults |
+| `sonarlint-checks.md` | Every SonarJS rule (~270) + cross-language equivalents |
+| `no-discards.md` | Bind every value; hook-enforced; pre-delivery 40-pattern audit |
+| `no-silent-failures.md` | Floor: failures produce log + metric + typed response; observable best-effort swallows; absence-class detection |
+| `wiring-and-usage-review.md` | Floor: every new symbol has a live consumer; NETWORK + INFRA path is part of the live path (no inert validators / dead config) |
+| `no-bloat.md` | Floor: least code that solves the problem; no speculative or inert surface; bloat-removal phase per plan |
+| `no-silent-drops.md` | Never silently delete; complete or surface |
+| `no-ambient-globals.md` | DI everywhere; no module-level mutable state |
+| `no-local-fs.md` | No FS state on ephemeral containers; object store + buffers |
+| `error-handling-with-context.md` | Wrap with operation + ids; structured logs; client envelope |
+| `error-codes.md` | Stable codes; flat namespace; HTTP-status + UX + i18n + runbook |
+| `log-levels.md` | FATAL / ERROR / WARN / INFO / DEBUG / TRACE — ERROR reserved for alerts |
+
+### Security
+
+| Rule | Purpose |
+| ---- | ------- |
+| `security.md` | OWASP Top 10 umbrella; STRIDE; CVSS severity |
+| `security-controls-org-wide.md` | 5-layer non-bypassable enforcement |
+| `secrets-management.md` | Vault-first; no disk plaintext; atomic rotation |
+| `install-allowlist.md` | Publisher allowlist for npm / VS Code / MCP / Homebrew |
+| `dependency-vulnerabilities.md` | CVE gate (MODERATE+ blocks) |
+| `dependency-overrides-not-exceptions.md` | Fix the tree via overrides; exceptions are last resort |
+| `dependency-pinning.md` | Lockfiles + digest pinning + SHA-pinned actions |
+| `license-allowlist-gate.md` | SPDX allowlist + Trove cross-check |
+| `updated-frameworks.md` | Latest stable; no EOL; no abandoned deps |
+| `docker-localhost-binding.md` | `127.0.0.1:` prefix on every dev port |
+| `docker-deployment.md` | Container security + multi-stage build patterns |
+| `repo-setup-checklist.md` | 20-point first-touch security checklist |
+
+### Resilience + ops
+
+| Rule | Purpose |
+| ---- | ------- |
+| `idempotency.md` | Retry-safe operations; Stripe-pattern keys |
+| `rate-limiting.md` | Multi-layer; per-endpoint defaults; RFC 6585 |
+| `circuit-breaker.md` | Per-dependency breaker; timeout-bounded; observable |
+| `graceful-degradation.md` | Criticality tiers; explicit degraded UX |
+| `feature-flags.md` | Owner + expiry + decision criteria + removal task |
+| `observability.md` | 3 pillars + Four Golden Signals + W3C trace context |
+| `audit-logging.md` | Append-only; hash-chain integrity; regulation-driven retention |
+| `runbook-template.md` | Canonical incident-response structure |
+| `ci-test-memory-tuning.md` | Jest / Vitest worker memory tuning for CI |
+| `github-actions-gotchas.md` | 13 recurring CI platform surprises + recognition signatures |
+| `deploy-failures-become-checks.md` | Every deploy failure becomes a pre-deploy check |
+
+### API + data evolution
+
+| Rule | Purpose |
+| ---- | ------- |
+| `api-design.md` | API surface design; response envelope; pagination |
+| `api-versioning.md` | Tolerant reader / strict writer; parallel versions during deprecation |
+| `schema-evolution.md` | Additive, reversible, idempotent, zero-downtime migrations |
+| `contract-testing.md` | CDC (Pact) + schema-based; producer's deploy gated |
+| `deprecation-lifecycle.md` | 4-stage calendar-anchored; RFC 8594 Sunset header |
+| `semver.md` | SemVer 2.0.0 + Conventional Commits 1.0.0 + Keep a Changelog 1.1.0 |
+
+### Compliance + a11y + i18n
+
+| Rule | Purpose |
+| ---- | ------- |
+| `gdpr-ccpa.md` | RoPA + lawful basis + 7 DSR rights + 72h breach notification |
+| `data-retention.md` | TTL + deletion path; automation-enforced; per-regulation minimums |
+| `a11y.md` | WCAG 2.2 AA minimum; AAA for critical paths |
+| `i18n.md` | ICU MessageFormat; Intl APIs; BCP 47 locales; RTL mirroring |
+| `ui-ux-quality-bar.md` | Every state ships; failure copy names the next action; WCAG 2.2 AA is part of done |
+| `code-of-conduct.md` | Contributor Covenant v2.1; enforcement team + reporting |
+
+### Documentation
+
+| Rule | Purpose |
+| ---- | ------- |
+| `documentation-requirements.md` | Diátaxis four-quadrant model; docs as code |
+| `docs-sync-with-code.md` | Docs update in the same PR as the code |
+| `adr-template.md` | Architecture Decision Records (MADR / Nygard) |
+| `official-docs-first.md` | Primary-source citations before any integration code |
+
+### Workspace + dev experience
+
+| Rule | Purpose |
+| ---- | ------- |
+| `local-dev-setup.md` | One bootstrap command; 30-minute first-run target |
+| `project-scoped-artifacts.md` | Workspace `.claude/` scaffold on first significant work |
+| `rule-authoring-global-vs-project.md` | Classify global vs project before writing |
+| `project-memory.md` | Each project's durable facts in the memory Claude Code loads for it; its `MEMORY.md` names the active plan on one `Active plan:` line; the Stop gate refuses memory it can prove stale |
+| `continuous-learning-mandate.md` | Every artifact has a learning loop |
+| `git-workflow.md` | Per-org git identity; conventional commits; PR workflow |
+| `testing.md` | Coverage targets; test types; TDD mandate |
+
+## Library rules and the lazy-loading model
+
+Library rules live under `rules-library/` and are never preloaded unconditionally. Instead they are loaded on demand — triggered by skill or agent invocation, by a file-type match in the `auto-skills.md` mapping, or by an explicit adaptive-workflow condition. This keeps the eager context budget under its 24,576-byte CI cap while still making the full 187-rule library available whenever the task warrants it.
+
+The lazy-loading contract has three parts:
+
+1. **Always-on global rules** load on every file touch. The `auto-skills.md` rule lists the "global rules that auto-load on EVERY repo touch" section explicitly.
+2. **File-type-mapped rules** load per the file-to-rule mapping in `auto-skills.md`. Touching a `*.go` file loads the `golang/*` rule set; touching a `*.tsx` file loads the `typescript/*` rule set; and so on.
+3. **Workspace rules** in `<workspace>/.claude/rules/` layer on top additively. Workspace rules may **raise** thresholds (stricter) but never **lower** them (looser). When layers conflict, the strictest wins.
+
+Per-line suppressions (`// eslint-disable`, `// @ts-ignore`, `# noqa`, `//nolint`, etc.) are **banned everywhere**. If a rule is wrong for the context, the project configuration changes — never the per-line directive.
+
+## Language-specific rules
+
+Each language subfolder contains the same five core files — `coding-style.md`, `no-discards.md`, `security.md`, `testing.md`, `patterns.md` — plus `hooks.md` in some cases. Each language rule **extends** the common counterpart with language-specific banned patterns and linter configurations.
+
+### Backend + systems languages
+
+| Subfolder | Style guide + linters |
+| --------- | --------------------- |
+| `golang/` | Effective Go + Uber Style Guide; `errcheck`, `errorlint`, `staticcheck`, `golangci-lint`, `gosec`, `govulncheck` |
+| `python/` | PEP 8 + PEP 484 + PEP 561; `ruff`, `mypy --strict`, `pyright --strict`, `bandit` |
+| `java/` | Effective Java 3e; Checkstyle, PMD, SpotBugs, ErrorProne; Spring Boot patterns |
+| `kotlin/` | Effective Kotlin; ktlint, detekt; coroutines + Sendable |
+| `csharp/` | Framework Design Guidelines; Roslyn analyzers, StyleCop, SonarAnalyzer; ASP.NET Core |
+| `ruby/` | Ruby Style Guide + Sandi Metz Rules; RuboCop, Brakeman, bundler-audit; Rails patterns |
+| `rust/` | Rust API Guidelines + Effective Rust; `cargo clippy -- -D warnings -W clippy::pedantic`, `cargo audit`, `cargo deny` |
+| `cpp/` | C++ Core Guidelines + Effective Modern C++; clang-tidy + cppcheck + sanitizers |
+| `swift/` | Swift API Design Guidelines; SwiftLint + SwiftFormat; `Sendable` + `actor` for concurrency |
+| `dart/` | Effective Dart + Flutter Architecture Guide; analyzer at max strictness |
+| `lua/` | Programming in Lua + OpenResty practices; luacheck |
+
+### Web frontend languages
+
+| Subfolder | Style guide + linters |
+| --------- | --------------------- |
+| `typescript/` | TS strict mode + `@typescript-eslint/strict-type-checked` + `sonarjs/recommended`; React 19 + Vue 3 patterns |
+| `html-css/` | HTML Living Standard + CSS specifications; W3C validation |
+
+### Data + infrastructure languages
+
+| Subfolder | Style guide + linters |
+| --------- | --------------------- |
+| `sql/` | SQL:2023 + PostgreSQL Style Guide; sqlfluff strict; squawk for Postgres migration safety |
+| `markdown/` | CommonMark spec + markdownlint |
+| `bash/` | Bash Reference Manual + Google Shell Style Guide; `set -euo pipefail`; ShellCheck `-S style` |
+| `dockerfile/` | Docker best practices; Hadolint; multi-stage build patterns |
+| `yaml/` | YAML 1.2 specification; yamllint strict |
+
+## How to author a rule
+
+Adding a rule to the global Council follows a five-step process drawn from the contributing guide.
+
+**Step 1 — Follow the principal-level template.** Every rule carries: a one-line summary, a core-principle paragraph, numbered hard-rules with WRONG/CORRECT side-by-side examples, a verification block, cross-references, a "Why this rule exists" section explaining the failure mode and cost, and learning hooks tied to the continuous-learning mandate.
+
+**Step 2 — Pick the location.**
+
+- Universal guidance → `rules/common/<name>.md`
+- Language-specific extension → `rules-library/<lang>/<name>.md`
+- Project-specific → `<workspace>/.claude/rules/<name>.md`
+
+**Step 3 — Cite primary sources.** Every rule that depends on external standards must cite the authoritative reference with version and section (for example, `WCAG 2.2 §1.4.3`, `OWASP ASVS 4.0.3 §2.1.7`, `RFC 9110 §9.3.1`). Stack Overflow, npm READMEs, and blog posts are not acceptable sole references.
+
+**Step 4 — Add anti-patterns, cross-references, and a verification checklist.** The anti-patterns table names what to reject, why, and the correct alternative. Cross-references link to sister rules, skills, and agents. The verification checklist carries concrete green/red predicates, not aspirational language.
+
+**Step 5 — Run `tests/verify-standards-citations.sh` locally.** This is the same gate CI runs. All four verifiers (`bootstrap/verify.sh`, `tests/verify-link-integrity.sh`, `tests/verify-no-orphans.sh`, `tests/verify-standards-citations.sh`) must pass before opening a PR.
+
+## Global vs. project rule decision guide
+
+Before writing any new rule, determine whether it belongs in the global Council or in a project-specific `.claude/rules/` directory. Per `rule-authoring-global-vs-project.md` and the contributing guide:
+
+| Question | Answer → goes in |
+| -------- | ---------------- |
+| Is this guidance applicable to every codebase you work on? | Global (`rules/common/`, `skills/`, `agents/`) |
+| Is this guidance tied to a specific project's stack, vendor, architecture, or domain model? | Project (`<workspace>/.claude/rules/` etc.) |
+| Could it be split into a generic principle + a project-specific config? | Both — global principle + project config (canonical shape) |
+
+When in doubt: write the principle in global, the specifics in project. Global rules must justify their recurring context cost. Put detailed examples in on-demand references and give the short entrypoint a clear activation condition. No project or workspace names, no vendor brand names from a specific project's vendor list, no per-project file paths, and no session-specific dates are permitted in global rules.
+
+<Tip>
+Run `node scripts/token-budget.mjs --root . --check` to measure the eager context budget after any change to `rules/common/` or `CLAUDE.md`. The CI cap is 24,576 bytes; exceeding it blocks the build.
+</Tip>

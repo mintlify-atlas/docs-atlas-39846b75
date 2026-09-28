@@ -1,0 +1,210 @@
+---
+title: "The 16-Division Council Protocol and Veto Authority"
+sidebarTitle: "Council Protocol"
+description: "A reference for all 16 Council divisions, their lead agents, when each auto-fires, veto authority, and decision-making tiebreaker matrix."
+---
+
+The Claude Council operates as 16 specialist divisions organized into two tiers. The **Core Five** are always active — every task receives their consideration regardless of scope. The **Extended Eleven** auto-fire on mechanical triggers: file patterns, keywords, and change scope. Every division operates at the principal-level mandate: decisions backed by evidence, clear tradeoffs, relevant failure modes, and ownership of the outcome. Depth is proportional to risk; verbosity and forced process do not substitute for those checks.
+
+<Note>
+  The Council scales to the work. Routine edits and status questions need a direct answer plus proportionate verification — not five division speeches, repeated intake questionnaires, or automatic agent fan-out. Extended Divisions only engage when their trigger ruleset actually matches.
+</Note>
+
+## The Core Five Divisions
+
+The Core Five speak on every substantive task in a fixed order: Architecture first, Testing last. Each division owns its domain; findings at BLOCKER severity must be resolved before the task can proceed.
+
+### Division 1: Architecture & Planning
+
+| | |
+|---|---|
+| **Lead agents** | `architect` (opus), `planner` (opus) |
+| **When** | Every task — sets strategic direction first |
+| **Veto** | Casting vote on technical ties (Tiebreaker Matrix) |
+| **Deliverables** | ADRs, architecture diagrams, phased implementation plans, trade-off analyses |
+| **Principles** | Modularity, scalability, maintainability, security, performance |
+
+Speaks first. Surfaces the system impact, recommended approach, cloud-service selection, implementation plan, scalability concerns, integration points, cost considerations, and risks.
+
+### Division 2: Implementation & Build
+
+| | |
+|---|---|
+| **Lead agents** | Per-stack build resolvers (`build-error-resolver` TS/JS · `go-build-resolver` · `python-` / `rust-` / `java-` / `dotnet-` / `ruby-` / `php-` / `swift-build-resolver`), `refactor-cleaner`, `database-reviewer` |
+| **When** | Every task that writes or modifies code |
+| **Veto** | None (escalates to Architecture on cross-cutting build concerns) |
+| **Deliverables** | Production-ready code, database migrations, build fixes, dependency management |
+| **Principles** | SOLID, DRY, KISS, YAGNI, clean code |
+
+Speaks second. Proposes the implementation, identifies build concerns, names files to create or modify with reasons, names existing code to reuse, lists new dependencies, captures database changes.
+
+### Division 3: Quality & Review
+
+| | |
+|---|---|
+| **Lead agents** | `code-reviewer`, `go-reviewer`, `python-reviewer`, `doc-updater` |
+| **When** | Every task that writes or modifies code or docs |
+| **Veto** | None (BLOCKER-severity findings must be fixed before merge) |
+| **Deliverables** | Code review verdicts, PR reports, documentation updates, quality metrics |
+| **Principles** | Constructive feedback, specific findings, educational review |
+
+Speaks third. Defines quality requirements, consistency checks, design quality (for frontend work — typography, colour, motion, layout), review checkpoints, documentation needs, and process requirements.
+
+### Division 4: Security
+
+| | |
+|---|---|
+| **Lead agent** | `security-reviewer` (opus) |
+| **When** | Every task — security is cross-cutting |
+| **Veto** | **VETO on unresolved technical-exploit BLOCKER** |
+| **Deliverables** | Vulnerability findings with CVSS scores, threat models, remediation code |
+| **Principles** | Defence in depth, least privilege, fail securely, trust no input |
+
+Speaks fourth. Runs the OWASP Top 10 + ASVS + STRIDE pass, names attack vectors, classifies data sensitivity, prescribes cloud security controls, and names the security controls needed.
+
+### Division 5: Testing & QA
+
+| | |
+|---|---|
+| **Lead agents** | `tdd-guide`, `e2e-runner` |
+| **When** | Every task that writes or modifies code |
+| **Veto** | None (insufficient coverage blocks merge per `extreme-lint-policy.md`) |
+| **Deliverables** | Test suites, coverage reports, staging validation, release sign-off |
+| **Principles** | Test-first (TDD), comprehensive edge cases, staging readiness |
+
+Speaks last. Defines the TDD approach (tests written first), the test plan (unit / integration / E2E / contract / load / security / a11y), edge cases, regression risks, coverage target (≥90% touched lines / ≥80% project per `extreme-lint-policy.md`), and staging readiness.
+
+## The Extended Eleven Divisions
+
+Each Extended Division auto-fires when its trigger ruleset matches. Triggers are mechanical — file pattern, keyword, change scope. A keyword or touched filename alone does not justify a separate agent or a new research phase; the division engages only when there is an actual unresolved risk or independent deliverable in its domain.
+
+### Division 6: Compliance & Legal
+
+| | |
+|---|---|
+| **Lead** | `compliance-reviewer` (opus) |
+| **Domain sub-leads** | `payments-reviewer` (opus), `health-reviewer` (opus), `education-reviewer` (opus) |
+| **Auto-fires on** | PII / GDPR / CCPA / HIPAA / PCI-DSS / SOC 2 / payments / billing / licensing / IP / contracts / KYC / AML / regulatory work |
+| **Veto** | **VETO on any unresolved regulatory finding** |
+
+Sub-leads engage alongside `compliance-reviewer` on triggered sub-domain work and share the Division 6 veto within their scope. `payments-reviewer` covers PCI-DSS BLOCKERs, PSD2 bypass, webhook signature absence, and idempotency gaps. `health-reviewer` covers HIPAA Privacy/Security BLOCKERs, 42 CFR Part 2 violations, and FDA SaMD classification breaches. `education-reviewer` covers COPPA / FERPA / NY §2-d BLOCKERs, WCAG 2.2 AA on assessment paths, and Section 504 / IDEA accommodation bypass.
+
+### Division 7: Product, UX & Customer Experience
+
+| | |
+|---|---|
+| **Lead** | `ux-reviewer` (sonnet), `accessibility-reviewer` (opus) |
+| **Auto-fires on** | UI files (`.vue` / `.tsx` / `.jsx` / `.swift` / `.dart`), views / components / pages dirs, copy + i18n + locale files, email templates, push / SMS notifications, accessibility / WCAG / ARIA work, forms, error UX |
+| **Veto** | None — BLOCKER-severity findings (WCAG violation, error UX that violates user rights) escalate to Compliance |
+
+### Division 8: Operations & Reliability
+
+| | |
+|---|---|
+| **Lead** | `ops-reviewer` (sonnet) |
+| **Auto-fires on** | Runbooks, SLO/SLA/SLI files, on-call config, observability dashboards, CI/CD workflows, IaC (Terraform / CDK / Helm), Dockerfile / compose, deploy / release configs, incident comms, monitoring rules |
+| **Veto** | None (invokes Risk for prod-posture-affecting changes) |
+
+### Division 9: Data & Analytics
+
+| | |
+|---|---|
+| **Lead** | `data-reviewer` (sonnet) |
+| **Auto-fires on** | Schema migrations, DB models, event tracking, analytics pipelines, ETL/ELT/dbt models, data warehouse work, PII flow surfaces, schema registry entries |
+| **Veto** | None (invokes Compliance when PII is touched) |
+
+### Division 10: Finance & FinOps
+
+| | |
+|---|---|
+| **Lead** | `finance-reviewer` (sonnet) |
+| **Auto-fires on** | Pricing / plan-tier / billing changes, cloud-cost-sensitive resources (Lambda, RDS, S3, CloudFront, DynamoDB), instance sizing / replica count / autoscaling bounds, data transfer pattern changes, unit-economics models |
+| **Veto** | None (invokes Strategy for material economic impact) |
+
+### Division 11: Risk Management
+
+| | |
+|---|---|
+| **Lead** | `risk-reviewer` (sonnet) |
+| **Auto-fires on** | Destructive operations (`DROP TABLE`, `DELETE FROM`, file unlink, `rm -rf`), backup / restore / DR config, multi-region / SPOF changes, blast-radius-extending changes, deploys touching > 10% of services |
+| **Veto** | **VETO on changes whose blast radius exceeds defined scope** |
+
+### Division 12: Strategy & Innovation
+
+| | |
+|---|---|
+| **Lead** | `strategy-reviewer` (sonnet) |
+| **Auto-fires on** | New features / surfaces / markets, ADRs / RFCs, roadmap / vision / strategy docs, deprecation / sunset / EOL work, vendor selection, build-vs-buy decisions, experiments / A/B tests / MVPs / spikes |
+| **Veto** | None (advisory) |
+
+### Division 13: People & Culture
+
+| | |
+|---|---|
+| **Lead** | `people-reviewer` (sonnet) |
+| **Auto-fires on** | `CONTRIBUTING` / `CODE_OF_CONDUCT` / `CODEOWNERS` changes, onboarding / hiring / career docs, team-structure / org-chart docs, dev-experience tooling, bus-factor-affecting changes |
+| **Veto** | None (advisory) |
+
+### Division 14: Sustainability & ESG
+
+| | |
+|---|---|
+| **Lead** | `esg-reviewer` (sonnet) |
+| **Auto-fires on** | ESG / sustainability / carbon-footprint docs, cloud-region selection (carbon intensity varies), always-on workload introduction, supplier ethics + ISO 14001 / ISO 9001:2026 work |
+| **Veto** | None (advisory) |
+
+### Division 15: Ethics & Responsible AI
+
+| | |
+|---|---|
+| **Lead** | `ai-ethics-reviewer` (opus) |
+| **Auto-fires on** | ML / AI / LLM / model / inference / training files, prompts / embeddings / RAG / fine-tune work, openai/anthropic/bedrock/vertex SDK use, recommendation / personalization / ranking / scoring features, automated-decision systems (GDPR Article 22), model cards / datasheets |
+| **Veto** | **VETO on AI safety / fairness / bias findings** |
+
+### Division 16: Communications & Documentation
+
+| | |
+|---|---|
+| **Lead** | `doc-updater` (haiku), `comms-reviewer` (sonnet) |
+| **Auto-fires on** | Any public-facing artifact, `README` / `CHANGELOG` / `RELEASE_NOTES`, API docs (OpenAPI / GraphQL SDL / Proto), blog / marketing / press files, status-page + incident-comms templates |
+| **Veto** | None — BLOCKER on misleading or non-compliant comms (escalates to Compliance + Strategy) |
+
+## Veto Authority Matrix
+
+When divisions disagree, named tiebreakers apply. Vetoes are explicit — they are documented in the Council consensus block.
+
+| Disagreement type | Decided by |
+|---|---|
+| Technical (architecture vs implementation) | **Division 1 (Architecture)** — casting vote |
+| Security BLOCKER | **Division 4 (Security)** — VETO |
+| Regulatory finding (GDPR / CCPA / HIPAA / PCI / SOC2) | **Division 6 (Compliance)** — VETO |
+| AI safety / fairness / bias | **Division 15 (Ethics)** — VETO |
+| Blast radius exceeds defined scope | **Division 11 (Risk)** — VETO |
+| Anything else unresolved | Escalate to user with named options |
+
+## Verify-Before-Claim
+
+Every `"done"` / `"shipped"` / `"complete"` / `"100%"` phrase must be preceded — in the same turn — by a verification action that produced the evidence. The verification block is the proof. Claims without proof are downgraded to *"implemented — verification deferred to X"* with a named unblock task.
+
+Every Council-mediated task ends with a verification block in this format:
+
+```text
+Council (this turn):
+  - Division 1 (Architecture): <deep — owns this change>
+  - Division 2 (Implementation): <position>
+  - Division 3 (Quality): <one-line gated verdict — no concern>
+  - Division 4 (Security): <deep — owns this change>
+  - Division 5 (Testing): <one-line gated verdict — no concern>
+  Extended fired: 6 (Compliance — GDPR consent UI), 7 (UX — copy review)
+  Research (this turn): <source · URL · read-date · key finding>
+  Model selection: <role> → <model> (ladder: <ladder>)
+  Consensus: GO
+  Tiebreaker invoked: N/A
+  Bypass attempts: 0
+```
+
+A task that lacks this block is a task that did not pass through the Council. That is a rule violation per `council-default.md`.
+
+<Note>
+  **The principal-level mandate** means every agent makes decisions with evidence, clear tradeoffs, relevant failure modes, and ownership of the outcome. Depth is proportional to risk. Contributions must be deep, cited against primary-source standards (OWASP / NIST / ISO / WCAG / GDPR and others), and decisive — not boilerplate. Verbosity, a fixed number of sections, or a forced committee structure does not prove quality. Every agent has declared identity and mission, enforces global rules, and escalates rather than silently drifting past a constraint.
+</Note>

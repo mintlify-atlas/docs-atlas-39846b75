@@ -1,0 +1,231 @@
+---
+title: "Skills Catalog: 119 Reusable Patterns and Methodologies"
+sidebarTitle: "Skills"
+description: "Reference for all 119 skills shipped with The Claude Council, organized by domain cluster with purpose descriptions and invocation guidance."
+---
+
+Skills are reusable patterns and methodologies — the positive counterpart to rules. Where a rule says "do not write X," a skill says "here is how to design Y." Each skill encodes principal-level guidance for a specific problem class: concrete patterns, named trade-offs, authoritative standards citations, anti-pattern tables, and a verification checklist. Skills are selected by description, task relevance, or explicit invocation. File `paths:` metadata acts as a rule-scoping suggestion for auto-routing, not as automatic skill activation — a skill can fire on any task where its guidance is relevant, regardless of file type. The context policy keeps detailed guidance on demand: skill entrypoints are concise, and detailed reference sections load only when the task warrants them.
+
+## Skill structure
+
+Per the principal-level mandate, every skill uses the following elements where they help the task. Short skills need not repeat a large fixed template:
+
+- **Purpose** — why this skill exists; what problem class it solves
+- **Standards Cited** — primary-source references with version + section (RFC / ISO / NIST / OWASP / W3C / WCAG / IFRS / ITIL)
+- **When to Fire** — file globs / keywords / scope conditions
+- **Core Patterns** — concrete examples with named trade-offs
+- **Anti-Patterns** — what to reject + why + named alternative
+- **Verification Checklist** — concrete green/red predicates
+- **Cross-References** — sister rules, skills, agents
+- **Why This Skill Exists** — failure mode it prevents + cost of getting it wrong
+
+## Skills by cluster
+
+### Code quality + cross-language
+
+| Skill | Purpose |
+| ----- | ------- |
+| `coding-quality-rules` | Universal code quality baseline |
+| `tdd-workflow` | Red-Green-Refactor; 90% touched / 80% project coverage |
+| `verification-loop` | After-implementation build/lint/test verification + strategic context management |
+| `search-first` | Sweep before write; codebase + sister workspaces + OSS |
+| `security-review` | OWASP Top 10 + ASVS + STRIDE pass per language |
+| `prompt-improver` | Research-grounded clarifying questions for vague prompts |
+| `continuous-learning-v2` | Instinct-based learning; confidence scoring; pattern evolution |
+| `i18n-rules` | Internationalisation — ICU MessageFormat, RTL layout mirroring, locale-aware sort + collation, Unicode normalisation |
+| `resilience-rules` | Resilience patterns — circuit breakers, graceful degradation, idempotency, retry-with-jitter, rate limiting, deploy-failures-become-checks |
+| `codebase-memory` | Knowledge-graph structural code queries (callers, call chains, dead code, impact analysis) via the codebase-memory MCP tools |
+
+### Backend + systems
+
+| Skill | Purpose |
+| ----- | ------- |
+| `backend-patterns` | Server architecture, DB optimization, fire-and-forget, content-hash caching |
+| `api-design` | REST patterns; status codes; pagination; versioning; error envelope |
+| `observability-patterns` | Structured logs; EMF metrics; correlation IDs; W3C trace context |
+| `cost-aware-llm-pipeline` | Model routing; budget tracking; regex-first parsing |
+| `mcp-builder` | MCP server: stdio + HTTP transports; tools / resources / prompts; capability negotiation |
+
+### Per-language skills
+
+| Skill | Purpose |
+| ----- | ------- |
+| `golang-patterns` | Idiomatic Go; interfaces; error handling |
+| `golang-testing` | Table-driven tests; subtests; benchmarks; fuzzing |
+| `typescript-patterns` | Discriminated unions; branded types; narrowing; strictness |
+| `python-patterns` | PEP 8; type hints; Pythonic idioms |
+| `python-testing` | pytest; fixtures; mocking; parametrization |
+| `java-coding-standards` | Effective Java 3e; immutability; Optional; streams |
+| `cpp-coding-standards` | C++ Core Guidelines; modern idioms |
+| `cpp-testing` | GoogleTest; CTest; sanitizers |
+| `swift-actor-persistence` | Thread-safe actors; data persistence |
+| `swift-protocol-di-testing` | Protocol DI; mock patterns |
+
+### Frontend + design
+
+| Skill | Purpose |
+| ----- | ------- |
+| `frontend-patterns` | Component architecture + visual design quality (typography / colour / motion / spatial composition) |
+| `vue3-patterns` | Composition API; `<script setup>`; composables; Pinia; reactivity |
+| `design-systems` | Design tokens; multi-platform theming; component API; a11y-built-in; versioning |
+| `interaction-design` | Affordances; signifiers; feedback; error prevention + recovery; microcopy; motion as functional language |
+| `ux-research` | Generative + evaluative methods; recruitment; sample sizing; persona + JTBD synthesis |
+| `e2e-testing` | Playwright patterns; critical user journeys |
+
+### Infrastructure + cloud
+
+| Skill | Purpose |
+| ----- | ------- |
+| `cloud-architecture` | Well-Architected pillars; region / AZ topology; multi-region patterns |
+| `network-patterns` | OSI / TCP-IP; CIDR design; routing; DNS; TLS; load balancing; service mesh; zero-trust |
+| `datacenter-ops` | Uptime Institute tiers; BICSI / ANSI-TIA-942; PUE/WUE/CUE; capacity |
+| `aws-serverless-patterns` | Lambda + API Gateway + Step Functions + EventBridge + SQS/SNS |
+| `docker-patterns` | Container security; networking; volumes; compose |
+| `deployment-patterns` | CI/CD; health checks; rollback strategies |
+
+### Security + compliance
+
+| Skill | Purpose |
+| ----- | ------- |
+| `owasp-asvs` | OWASP ASVS 4.0.3 control catalogue; L1/L2/L3 mapping |
+| `gdpr-ccpa-compliance` | Lawful basis; DSR; consent; cross-border; breach notification; DPIA; RoPA |
+| `iso27001-controls` | Annex A 93 controls; SoA; risk treatment |
+| `soc2-readiness` | Trust Service Criteria; control-to-evidence mapping |
+| `pci-dss-patterns` | Scope reduction via tokenization; SAQ selection; 12 requirements mapped |
+| `hipaa-compliance` | HIPAA Privacy + Security + Breach Notification + HITECH + 42 CFR Part 2 |
+| `ferpa-coppa-compliance` | FERPA + COPPA + GDPR-K + AADC + state student-privacy laws |
+| `security-scan` | Audit Claude Code config itself (meta-skill) |
+
+### Data + analytics
+
+| Skill | Purpose |
+| ----- | ------- |
+| `database-migrations` | Schema changes; rollbacks; zero-downtime |
+| `postgres-patterns` | Query optimization; indexing; RLS |
+| `dynamodb-patterns` | Single-table design; composite keys; GSIs; conditional writes; BatchWrite; TTL; streams; tenant isolation |
+| `clickhouse-io` | Analytics queries; ClickHouse data engineering |
+| `jpa-patterns` | JPA entity design; relationships; queries |
+
+### Finance + accounting
+
+| Skill | Purpose |
+| ----- | ------- |
+| `bookkeeping-patterns` | Double-entry; chart of accounts; journal entries; ledger reconciliation; immutable accounting events |
+| `ifrs-gaap-reporting` | Balance Sheet / Income Statement / Cash Flow / SOCIE; IFRS 15 + ASC 606 revenue; IFRS 16 + ASC 842 leases |
+| `fp-and-a` | Budget vs actual variance; rolling forecasts; driver-based models; scenario planning; SaaS metrics; cohort analysis |
+| `valuation-models` | DCF; trading comparables; precedent transactions; LBO; SOTP; VC method; real options |
+| `financial-analyst` | Earnings model maintenance; ratio analysis; accounting-quality assessment; channel checks; sector-relative valuation |
+| `investment-research` | Thesis development; primary research; financial modelling; valuation triangulation |
+| `investor-due-diligence` | Operational / financial / legal / commercial / tech / ESG / reference diligence |
+| `portfolio-theory` | Markowitz mean-variance; CAPM; factor models; risk budgeting; rebalancing; drawdown + tail-risk |
+| `stock-broker` | Order types; routing; TCA; best execution; Reg NMS / MiFID II; suitability |
+
+### AI/ML + LLM
+
+| Skill | Purpose |
+| ----- | ------- |
+| `prompt-engineering` | Task decomposition; RCIEF structure; few-shot; chain-of-thought; tool-use; versioning; eval |
+| `ml-model-selection` | Match problem class to model family; CV with proper splits; cost / latency / interpretability / compliance |
+| `rag-design` | Chunking; embeddings; vector storage; hybrid retrieval; reranking; grounding; eval; RAG-vs-fine-tune-vs-long-context |
+| `mlops-patterns` | Feature stores; model registry; training pipelines; deployment; drift monitoring; A/B; rollback |
+| `fine-tuning-workflows` | When fine-tuning beats prompting + RAG; SFT / DPO / RLHF; LoRA / QLoRA; eval; safety re-tune |
+| `eval-harness` | Formal evaluation harness for AI/ML systems |
+| `iterative-retrieval` | Sub-agent pattern for retrieval-augmented work |
+
+### Testing
+
+| Skill | Purpose |
+| ----- | ------- |
+| `tdd-workflow` | Red-Green-Refactor; 90% touched / 80% project coverage |
+| `verification-loop` | After-implementation build/lint/test verification + strategic context management |
+| `e2e-testing` | Playwright patterns; critical user journeys |
+| `golang-testing` | Table-driven tests; subtests; benchmarks; fuzzing |
+| `python-testing` | pytest; fixtures; mocking; parametrization |
+| `cpp-testing` | GoogleTest; CTest; sanitizers |
+| `swift-protocol-di-testing` | Protocol DI; mock patterns |
+
+### Accessibility
+
+| Skill | Purpose |
+| ----- | ------- |
+| `wcag-accessibility` | WCAG 2.2 AA + AAA; semantic HTML; ARIA 1.2; keyboard; screen reader; contrast; motion; 9 new SCs |
+| `accessible-forms` | Labels; errors; autocomplete; validation timing; multi-step; file inputs; Redundant Entry + Accessible Authentication |
+
+### Innovation + strategy
+
+| Skill | Purpose |
+| ----- | ------- |
+| `design-thinking` | Empathise → Define → Ideate → Prototype → Test; HMW questions |
+| `triz-patterns` | TRIZ 40 inventive principles; contradiction matrix; ideal final result |
+| `lean-startup` | Build-measure-learn; validated learning; MVP taxonomy; innovation accounting; pivot types |
+| `lean-manufacturing` | Toyota Production System; JIT; jidoka; kanban; 5S; value-stream mapping; kaizen |
+| `six-sigma` | DMAIC; DMADV; SIPOC; process capability (Cp/Cpk); control charts; DOE |
+| `supply-chain-patterns` | APICS CPIM/CSCP; S&OP; demand planning; inventory optimisation; SCOR |
+| `structural-basics` | Eurocode / AISC / ACI; load paths; structural integrity |
+| `mep-coordination` | ASHRAE; ISO 19650 BIM; MEP coordination; clash detection |
+
+### Org + culture
+
+| Skill | Purpose |
+| ----- | ------- |
+| `org-design` | Team topologies; span of control; reporting structures; DACI/RACI; Conway's Law; scaling |
+| `okr-framework` | Objectives + Key Results design; deployment; grading; anti-pattern avoidance |
+| `hiring-process` | Role definition; sourcing; structured interviewing; bar-raising; calibration |
+| `performance-management` | Feedback systems; calibration; career frameworks; PIPs |
+| `negotiation-patterns` | Harvard Method; BATNA + ZOPA; tactical empathy (Voss); preparation; multi-issue tradeoffs |
+| `communication-patterns` | Pyramid Principle; audience analysis; mode selection; difficult conversations |
+| `research-methods` | Primary / secondary / tertiary sources; quant / qual / mixed methods; literature review |
+| `historical-analysis` | Primary-source critique; archival methodology; periodisation; oral history; cliometrics |
+
+### Launch + media (BRAG)
+
+| Skill | Purpose |
+| ----- | ------- |
+| `brag` | On-demand project/website launch video, poster and share copy; lean by default, optional Hyperframes/voice route |
+
+The `brag` skill is the Council's launch-media workflow. It produces a launch video, poster, and share copy on demand. See the [BRAG setup and verification guide](https://github.com/Nmor/the-claude-council/blob/main/docs/BRAG.md) for the full flow including the optional Hyperframes route.
+
+## How to invoke a skill
+
+Skills can be activated in three ways:
+
+**1. By name in a prompt.** Explicitly name a skill to load it regardless of the current file context:
+
+```text
+Use the payment-processing-patterns skill to review this checkout flow.
+```
+
+**2. By task relevance (automatic).** The Council selects skills based on description and task relevance. When a task matches a skill's "When to Fire" conditions — keywords, scope, problem class — the skill fires silently without a slash command or explicit invocation.
+
+**3. Via `paths:` metadata routing.** Some skills declare `paths:` frontmatter that maps file globs to skill invocation. This is a rule-scoping mechanism for file-type routing, not a guarantee of activation — the skill can still fire on any task where its guidance applies.
+
+A few examples of auto-fire patterns from `auto-skills.md`:
+
+- Touching a `*.go` file auto-fires: `golang-patterns`, `golang-testing`, `coding-quality-rules`, `security-review`, `tdd-workflow` — and engages agents: `go-reviewer`, `go-build-resolver`, `tdd-guide`, `security-reviewer`.
+- Touching a `*.vue` UI file auto-fires: `frontend-patterns`, `vue3-patterns`, `coding-quality-rules` — and engages: `code-reviewer`.
+- Touching a payments-related file (`payments/`, `billing/`, `checkout/`, `stripe/`, `escrow/`, `wallet/`, etc.) auto-fires: `payment-processing-patterns`, `pci-dss-patterns`, `bookkeeping-patterns`, `security-review`, `owasp-asvs`, `soc2-readiness` — and engages: `payments-reviewer`, `compliance-reviewer` (VETO), `security-reviewer`, `finance-reviewer`, `risk-reviewer`.
+
+## Skill structure in detail
+
+Every skill under `skills/<name>/SKILL.md` is authored against the principal-level template. The elements, and what each must contain:
+
+| Element | What it must deliver |
+| ------- | -------------------- |
+| **Purpose** | Why this skill exists; what problem class it solves; what it does NOT solve (negative scope is as important as positive scope) |
+| **Standards Cited** | Authoritative references with version + section — WCAG 2.2 §1.4.11, OWASP ASVS 4.0.3 §2.2.1, ISO/IEC 27001:2022 Annex A.8.7, RFC 9110 §9.3.1 |
+| **When to Fire** | Triggers: file globs, keywords, scope conditions, plan-tier impact |
+| **Core Patterns** | Principal-level patterns with concrete examples, named trade-offs, inflection points |
+| **Anti-Patterns** | What to reject + why + the named alternative (≥5 anti-patterns with named alternatives required) |
+| **Verification Checklist** | Concrete checks — not aspirational; each check has a green/red predicate |
+| **Cross-References** | Sister rules, sister skills, agents that pair with this skill (≥3 required) |
+| **Why This Skill Exists** | The failure mode this skill prevents; the cost of getting it wrong vs the cost of the rigor |
+
+The quality floor for any skill contributed to the global Council: ≥ 500 words of substantive content (target 1,500–3,000 for complex domains), ≥ 3 authoritative standards citations with version and section, ≥ 5 anti-patterns with named alternatives, ≥ 1 verification checklist with concrete checks, ≥ 3 cross-references to sister rules/skills/agents, and zero project-specific names, paths, or vendor identifiers.
+
+## How to add a skill
+
+Adding a skill to the global Council follows the same principal-level bar as adding a rule. The full process — including how to pick the right cluster, how to author the skill template, how to add the file-type mapping in `auto-skills.md`, and how to run the verifier suite before opening a PR — is documented in the [contributing guide](https://github.com/Nmor/the-claude-council/blob/main/docs/CONTRIBUTING.md).
+
+<Note>
+Skills are never project-specific names, workspace paths, or vendor identifiers. Zero "shallow stub" language ("see X for details" without details) is permitted. If none of the 13 existing clusters fits your skill, propose a new cluster in the PR description.
+</Note>

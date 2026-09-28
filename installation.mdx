@@ -1,0 +1,297 @@
+---
+title: "Install The Claude Council on macOS, Linux, and Windows"
+sidebarTitle: "Installation"
+description: "Step-by-step installation guide for The Claude Council on macOS, Linux, WSL2, and Windows PowerShell — plus IDE integration for VS Code, Cursor, Windsurf, and JetBrains."
+---
+
+This guide walks through installing The Claude Council on every supported platform. The installer is fully cross-platform: macOS, Linux, and WSL2 use the bash script; Windows users get a native PowerShell script that requires no WSL2, Git Bash, or shell emulation. IDE integration is auto-detected and applied as opt-in templates — the installer never overwrites your existing IDE settings. After installation, open any project in any Claude Code-compatible IDE and the Council fires automatically on the next prompt.
+
+## Prerequisites
+
+| Requirement | Minimum | How to install |
+|-------------|---------|----------------|
+| **`git`** | Any recent | macOS: `brew install git`. Linux: distro package. Windows: [git-scm.com](https://git-scm.com/) |
+| **`bash`** *(macOS / Linux / WSL2)* | 4.0+ | macOS: `brew install bash` (system bash is 3.2). Linux: usually present. Not needed on Windows-native — `*.ps1` scripts cover the full flow. |
+| **`claude` CLI** | Latest | Follow [Anthropic's install docs](https://docs.claude.com/claude-code) — separate from this repo |
+| **`rsync`** *(macOS / Linux, optional)* | Any | Speeds up the install; falls back to `cp -R` if absent |
+| **PowerShell** *(Windows only)* | 5.1+ | Ships with Windows 10/11; PowerShell Core 7+ also works on any OS |
+
+Everything else — rules, skills, agents, commands, hooks, and templates — ships in the repo.
+
+## Platform Installation
+
+<Tabs>
+  <Tab title="macOS">
+    ```bash
+    # 1. Clone the repo
+    git clone https://github.com/Nmor/the-claude-council.git
+    cd the-claude-council
+
+    # 2. Run the installer
+    ./bootstrap/install.sh
+
+    # 3. Verify the install
+    ./bootstrap/verify.sh
+
+    # Optional: dry-run to see what would change without doing it
+    ./bootstrap/install.sh --dry-run
+    ```
+
+    <Note>
+      macOS ships with bash 3.2 (the last GPL2-era release). The installer requires bash 4.0+. Install via `brew install bash` and either re-launch your terminal or invoke the installer directly:
+
+      ```bash
+      /opt/homebrew/bin/bash bootstrap/install.sh
+      ```
+    </Note>
+  </Tab>
+
+  <Tab title="Linux">
+    ```bash
+    # Same flow as macOS — the script is portable.
+    git clone https://github.com/Nmor/the-claude-council.git
+    cd the-claude-council
+    ./bootstrap/install.sh
+    ./bootstrap/verify.sh
+    ```
+
+    Tested on Ubuntu 22.04+, Debian 12+, Fedora 39+, and Arch (rolling). If the bootstrap scripts are not executable after cloning, restore the executable bit:
+
+    ```bash
+    chmod +x bootstrap/*.sh
+    ```
+  </Tab>
+
+  <Tab title="Windows">
+    The full install, verify, and uninstall flow is native PowerShell — no WSL2, Git Bash, or shell emulation required.
+
+    ```powershell
+    # Open PowerShell as your user (NOT as Administrator)
+    git clone https://github.com/Nmor/the-claude-council.git
+    Set-Location the-claude-council
+
+    # Allow script execution for this session if your policy is restricted
+    Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+
+    # Install
+    .\bootstrap\install.ps1
+
+    # Verify
+    .\bootstrap\verify.ps1
+
+    # Optional: dry-run to see what would change without doing it
+    .\bootstrap\install.ps1 -DryRun
+
+    # Optional: verbose verify output (each pass + fail line)
+    .\bootstrap\verify.ps1 -Verbose
+    ```
+
+    The PowerShell installer places the config at `$env:USERPROFILE\.claude\`, which is the location the `claude` CLI on Windows expects. The verifier runs the same phases as `verify.sh` (Layout / Inventory / Agent frontmatter / Skill SKILL.md / Hook readability / Broken cross-references / No project contamination) and prints a green or red verdict identical in shape to the bash version.
+
+    <Note>
+      If you see *"running scripts is disabled on this system"*, run `Set-ExecutionPolicy -Scope Process -ExecutionPolicy Bypass` before invoking the installer. This change is scoped to the current PowerShell session only.
+    </Note>
+  </Tab>
+
+  <Tab title="WSL2">
+    If your Claude Code workflow lives entirely inside WSL2, use the macOS / Linux instructions within your WSL distribution. The config lives in the WSL filesystem (`/home/<you>/.claude/`) and the bash scripts run unchanged.
+
+    ```bash
+    git clone https://github.com/Nmor/the-claude-council.git
+    cd the-claude-council
+    ./bootstrap/install.sh
+    ./bootstrap/verify.sh
+    ```
+
+    <Note>
+      Run the installer inside WSL2, not from the Windows side. The `claude` CLI must also be installed inside WSL2 for it to find `~/.claude/`.
+    </Note>
+  </Tab>
+</Tabs>
+
+## Installer Flags Reference
+
+| Bash flag | PowerShell flag | Effect |
+|-----------|----------------|--------|
+| `--dry-run` | `-DryRun` | Preview all actions without making any changes to the filesystem |
+| `--force` | `-Force` | Skip the timestamped backup and overwrite existing `~/.claude/` directly |
+| `--no-ide` | `-NoIde` | Skip IDE integration detection and template copying entirely |
+
+Example usage:
+
+<CodeGroup>
+  ```bash macOS / Linux / WSL2
+  ./bootstrap/install.sh --dry-run
+  ./bootstrap/install.sh --force
+  ./bootstrap/install.sh --no-ide
+  ```
+
+  ```powershell Windows (PowerShell)
+  .\bootstrap\install.ps1 -DryRun
+  .\bootstrap\install.ps1 -Force
+  .\bootstrap\install.ps1 -NoIde
+  ```
+</CodeGroup>
+
+## IDE Integration
+
+The installer auto-detects installed IDEs and copies recommended settings to opt-in locations. It **never** overwrites your existing IDE settings — templates are copied as `*.recommended.json` for manual review and merging.
+
+| IDE | Support level | Integration |
+|-----|--------------|-------------|
+| **VS Code** | First-class | `templates/ide-configs/vscode/` — settings + recommended extensions |
+| **Cursor** | First-class | `templates/ide-configs/cursor/` — VS Code-compatible config |
+| **Windsurf** | First-class | `templates/ide-configs/windsurf/` — settings + recommended extensions |
+| **JetBrains** (IntelliJ / GoLand / PyCharm / WebStorm / PhpStorm / RubyMine / RustRover / CLion) | First-class | Anthropic's **Claude Code [Beta]** plugin from JetBrains Marketplace + shim in `templates/ide-configs/jetbrains/` |
+| **Neovim / Emacs** / other terminal-first editors | Best-effort | The `claude` CLI loads `~/.claude/` regardless of editor — no IDE integration step needed |
+
+### VS Code
+
+Recommended extensions are saved to `~/.vscode/extensions.recommended.json`. Compare with your existing extensions and install any that are missing:
+
+```bash
+cat ~/.vscode/extensions.recommended.json \
+  | jq -r '.recommendations[]' \
+  | xargs -I {} code --install-extension {}
+```
+
+Recommended settings live in `templates/ide-configs/vscode/settings.json`. Merge any keys you want into your user settings file:
+
+- **macOS:** `~/Library/Application Support/Code/User/settings.json`
+- **Linux:** `~/.config/Code/User/settings.json`
+- **Windows:** `%APPDATA%\Code\User\settings.json`
+
+### Cursor
+
+Cursor uses the same extension format as VS Code. Inspect the recommended settings and merge selectively:
+
+```bash
+cat templates/ide-configs/cursor/settings.json
+```
+
+Settings location:
+
+- **macOS:** `~/Library/Application Support/Cursor/User/settings.json`
+- **Linux:** `~/.config/Cursor/User/settings.json`
+- **Windows:** `%APPDATA%\Cursor\User\settings.json`
+
+### Windsurf
+
+```bash
+cat templates/ide-configs/windsurf/settings.json
+```
+
+Settings location:
+
+- **macOS:** `~/Library/Application Support/Windsurf/User/settings.json`
+- **Linux:** `~/.config/Windsurf/User/settings.json`
+- **Windows:** `%APPDATA%\Windsurf\User\settings.json`
+
+### JetBrains
+
+Install Anthropic's **Claude Code [Beta]** plugin from the JetBrains Marketplace:
+
+1. Open **Settings → Plugins → Marketplace**
+2. Search for `Claude Code`
+3. Install and restart the IDE
+4. Open **Settings → Tools → Claude Code** and point it at the `claude` CLI binary (auto-detected in most cases)
+
+The JetBrains template directory contains a detailed README:
+
+```bash
+cat templates/ide-configs/jetbrains/README.md
+```
+
+## Verifying the Installation
+
+Run the verifier with the `--verbose` flag to see all eight phase results in full detail:
+
+<CodeGroup>
+  ```bash macOS / Linux / WSL2
+  ./bootstrap/verify.sh --verbose
+  ```
+
+  ```powershell Windows (PowerShell)
+  .\bootstrap\verify.ps1 -Verbose
+  ```
+</CodeGroup>
+
+A healthy install reports output similar to:
+
+```text
+== Phase A: Layout exists ==
+== Phase B: Inventory floors ==
+  ✓ rules/common/*.md   ≥ 10   (got 24, ...)
+  ✓ rules-library/*.md  ≥ 100  (got 187, ...)
+  ✓ skills/             ≥ 90   (got 119, ...)
+  ✓ agents/*.md         ≥ 25   (got 39, ...)
+  ✓ commands/*.md       ≥ 30   (got 33, ...)
+== Phase C: Agent frontmatter sanity ==
+== Phase D: Skill SKILL.md presence ==
+== Phase E: Hook executability ==
+== Phase F: Broken cross-references ==
+== Phase G: No project contamination ==
+
+VERIFICATION SUMMARY
+Inventory: 24 rules.common, 18 lang subfolders, 119 skills, 39 agents, 33 commands
+Checks:    21 passed, 0 failed
+
+✓ PASS — global Claude config is healthy.
+```
+
+If any check fails, consult the specific failure line (e.g. `rules/common/*.md ≥ 10 — got 0`), confirm the install copied the files (`ls ~/.claude/rules/common/`), and re-run with `--force` if the destination is empty:
+
+```bash
+./bootstrap/install.sh --force
+./bootstrap/verify.sh --verbose
+```
+
+## Migrating an Existing Install
+
+If you have an existing Claude or Codex setup and want to apply the lean workflow and cost controls without replacing your primary config, use the additive, reversible context migration:
+
+```bash
+# Preview the migration without applying it
+python3 bootstrap/context.py apply --dry-run
+
+# Apply the migration
+python3 bootstrap/context.py apply
+```
+
+See `docs/CONTEXT.md` in the repo for full details on context budgets, cost controls, and runtime limitations.
+
+## Uninstalling
+
+<CodeGroup>
+  ```bash macOS / Linux / WSL2
+  # Default: moves ~/.claude/ to ~/.claude.uninstalled.<timestamp>
+  ./bootstrap/uninstall.sh
+
+  # To delete outright (prompts for "yes-delete" confirmation)
+  ./bootstrap/uninstall.sh --purge
+  ```
+
+  ```powershell Windows (PowerShell)
+  # Default: moves .claude\ to .claude.uninstalled.<timestamp>
+  .\bootstrap\uninstall.ps1
+
+  # To delete outright (prompts for "yes-delete" confirmation)
+  .\bootstrap\uninstall.ps1 -Purge
+  ```
+</CodeGroup>
+
+The default uninstall moves `~/.claude/` to a timestamped archive (`~/.claude.uninstalled.<timestamp>`) rather than deleting it. To restore, move the archive back:
+
+```bash
+mv ~/.claude.uninstalled.<timestamp> ~/.claude
+```
+
+To restore from a pre-install backup created by the installer:
+
+```bash
+mv ~/.claude.bak.<timestamp> ~/.claude
+```
+
+<Note>
+  The installer is fully idempotent — it is safe to run multiple times. Each run backs up the current `~/.claude/` to a new timestamped directory (unless `--force` is passed) and reinstalls a clean config surface. Runtime state such as audits, learning events, project memory, and session history is preserved because the installer explicitly excludes those directories from the overwrite.
+</Note>

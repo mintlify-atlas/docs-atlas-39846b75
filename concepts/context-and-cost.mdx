@@ -1,0 +1,100 @@
+---
+title: "Context Controls, Session Cost, and Adaptive Workflow"
+sidebarTitle: "Context & Cost"
+description: "How The Claude Council manages context window budget, adaptive workflow defaults, and session cost — including the lean cold-load contract and on-demand lazy loading."
+---
+
+The Claude Council uses a short working contract loaded at session start and reads detailed standards on demand. Correctness, security, and required tests still apply — but fixed speeches, repeated intake, recursive reviews, and automatic agent fan-out are not substitutes for those checks. Context budget is measured and enforced: the cold-load contract is a tight ~19,428 bytes, while the full ~4.8 MB standards library is available only when a task actually needs it.
+
+## Workflow Defaults
+
+These defaults apply to every session. They are not a global limit on all open terminals or apps — they govern how the Council operates within a single active session.
+
+- **Do routine work in the main session.** Use at most one helper at a time for a concrete independent task. Keep its prompt scoped and output concise; no recursive delegation.
+- **Read the existing plan's current handoff and relevant task sections.** Keep the full history in that same file; do not inject it into every helper's context.
+- **Investigate once, implement, verify the changed behavior, and finish.** Reopen analysis only when new evidence warrants it. Do not redo valid checks merely because a turn changed.
+- **Save a compact handoff before compaction.** Use a fresh session for unrelated work. Compaction itself consumes tokens; avoid repeatedly compacting unchanged material.
+- **Keep the user's chosen primary model.** Model downgrades are not a substitute for reducing unnecessary context or delegation. Use smaller helpers only for suitable tasks.
+
+Full rule text and examples remain under `rules-library/council-detail/`. Current `CLAUDE.md` and short rules govern their procedural interpretation.
+
+## Context Budget Numbers
+
+The Council keeps the cold-load surface small and measures it in CI on every commit.
+
+| Surface | Size | Notes |
+|---|---|---|
+| Cold-load (Floor + CLAUDE.md) | ~19,428 bytes / ~4,857 tokens | Loaded on every session start |
+| CI budget cap | 24,576 bytes fixed | Per-file self-declared budgets cannot replace this aggregate gate |
+| Lazy-load surface (Library + Skills) | ~4.8 MB | Available on demand only |
+
+Byte counts and bytes/4 token estimates are reproducible size measurements, not tokenizer output, billing data, or a promise of a particular speedup. Use the client's `/context` and usage report to validate real sessions after rollout.
+
+Measure and verify the budget at any time:
+
+```bash
+node scripts/token-budget.mjs --root . --check
+node scripts/token-budget.mjs --root . --json
+node scripts/token-budget.mjs --root ~/.claude --json
+```
+
+## The Two Context Hazards
+
+<Warning>
+  **Never put a clone of this repo on a workspace's walk-up path.** Claude Code collects config by walking up from the working directory. A clone at `<parent-of-your-projects>/.claude/` gets loaded a *second* time as "project instructions" alongside the real one in `$HOME` — silently doubling the cold-load for every project under that parent. Keep this repo a **sibling** of your projects, never an ancestor.
+</Warning>
+
+The second hazard is subtler but equally real:
+
+- **On-demand guidance still costs context when read.** Keep skill entrypoints concise and load only the references needed for the current task. Skill selection uses descriptions and explicit invocation; `paths:` is a rule-scoping mechanism, not automatic skill firing.
+
+Both were real regressions in this repo before CI measurement was introduced. Re-measure after any change to the lazy-load surface: `node scripts/token-budget.mjs --root . --check`.
+
+## Claude-Specific Defaults
+
+Fresh installs configure Claude Code with a set of session controls designed to keep context manageable without sacrificing capability.
+
+- **Auto-compaction** enabled with a 100,000-token window. This is a target, not a guarantee that one large tool result cannot temporarily exceed it. Check for higher-priority project, CLI, or environment overrides — especially `DISABLE_AUTO_COMPACT`, `DISABLE_COMPACT`, and `CLAUDE_CODE_AUTO_COMPACT_WINDOW`.
+- **No automatic dynamic workflows.** The main session owns routine work. `disableWorkflows: false` re-enables dynamic workflows when explicitly needed; do not confuse the small-size guideline with an enforced global agent cap.
+- **One level of subagents.** At most one justified helper at a time. No recursive delegation unless the user explicitly requests a larger team or the task justifies a bounded exception.
+- **The automatic prompt-improver hook is removed** from default registration. Duplicating every request and demanding a fresh questionnaire consumed context even on follow-ups. The `prompt-improver` skill remains available when clarification is actually needed.
+
+The documented workflow concurrency environment limit requires Claude Code 2.1.269+; it is not applied to older clients. These defaults are intended for Claude Code 2.1.261+.
+
+## Additive Migration for Existing Installs
+
+For an existing installation, preview and apply the additive migration:
+
+```bash
+python3 bootstrap/context.py apply --claude-home ~/.claude --dry-run
+python3 bootstrap/context.py apply --claude-home ~/.claude
+```
+
+The migration backs up changed files, preserves unrelated settings and local runtime data, and refuses to overwrite modified managed files. Local-only differences in original instructions are retained in the private backup for review. The new short contract keeps the single-plan and project-memory behavior. Start a fresh session to load it.
+
+To restore the previous state:
+
+```bash
+python3 bootstrap/context.py restore --claude-home ~/.claude --dry-run
+python3 bootstrap/context.py restore --claude-home ~/.claude
+```
+
+Each home has a private `.council-context.json` containing original file backups. Do not publish it. Restore refuses if managed files have changed; reconcile those changes first.
+
+## Model Tier Selection
+
+The Council does not hardcode a model per agent — it resolves each agent's role to a capability-aware ladder and spawns the highest-ranked model available in the current install. Resolution degrades gracefully and audibly: a runtime-unavailable model drops to the next ladder rung and is surfaced, never silently downgraded.
+
+| Role class | Ladder (best → floor) | Notes |
+|---|---|---|
+| Strategic / long-horizon / hardest non-security work | `fable → opus → sonnet` | Fable only here — where first-shot correctness offsets its ~2× cost |
+| Security & regulated review | `opus → sonnet` | Fable excluded — its safety classifiers refuse security work |
+| Deep + standard review | `opus → sonnet` | Deep reviewers stay on Opus |
+| Mechanical build / refactor | `sonnet → haiku` | Deterministic fixes — Sonnet ceiling, never over-provisioned |
+| Search / doc / codemap | `haiku → sonnet` | Cheapest model that does the job |
+
+Capability order: **fable ≥ mythos > opus > sonnet > haiku**. A Max install fields Fable on the hardest work; a Pro / Team / ZDR install automatically fields the next-best model for that same job. Never a hard failure while a floor model is available.
+
+<Tip>
+  For an exceptional large workflow, explicitly choose the workflow, model, and budget instead of making every task run that way. Queue additional useful work rather than launching several overlapping reviews from the same session.
+</Tip>

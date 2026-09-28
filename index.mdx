@@ -1,20 +1,99 @@
 ---
-title: "Introduction"
-description: "Welcome to your project"
+title: "The Claude Council: Principal-Level Multi-Agent Framework for Claude Code"
+sidebarTitle: "Home"
+description: "Drop-in ~/.claude/ configuration that turns Claude Code into a 16-division multi-agent Council operating at principal-engineer level across architecture, security, compliance, and more."
 ---
 
-Write a short description of your product here. What it does, who it's for, and what they can accomplish with it.
+The Claude Council is a drop-in `~/.claude/` configuration that transforms Claude Code from a single generalist agent into a **16-division multi-agent Council** operating at principal-engineer level. Install it in three minutes on any machine, any project, with any IDE — no license key, no SaaS account, no telemetry.
 
-<Tip>
-  Ready to make this your own? Start by editing this page. Update your `docs.json` file to customize your site. Then fill out the [Quickstart](/quickstart) page.
-</Tip>
+<CardGroup cols={2}>
+  <Card title="Quickstart" icon="rocket" href="/quickstart">
+    Get the Council running on your machine in under three minutes.
+  </Card>
+  <Card title="Installation Guide" icon="download" href="/installation">
+    Full install options for macOS, Linux, Windows, and Codex CLI.
+  </Card>
+  <Card title="Architecture" icon="diagram-project" href="/concepts/architecture">
+    Understand how rules, skills, agents, and hooks compose together.
+  </Card>
+  <Card title="Council Protocol" icon="users" href="/concepts/council-protocol">
+    The 16-division structure, veto authority, and workflow phases.
+  </Card>
+</CardGroup>
 
-<Card title="Quickstart" icon="rocket" href="/quickstart">
-  This card links to the quickstart page in your project.
-</Card>
-<Card title="Components" icon="puzzle-piece" href="https://mintlify.com/docs/components">
-  Add cards, callouts, steps, tabs, and more to design and structure your pages.
-</Card>
-<Card title="Settings" icon="gear" href="https://mintlify.com/docs/organize/settings">
-  Set your site name, branding, and navigation in the `docs.json` file.
-</Card>
+## What you get after install
+
+Every prompt in every project receives the full Council treatment — without speeches, questionnaires, or extra approval cycles for routine work.
+
+<CardGroup cols={2}>
+  <Card title="Rules" icon="book" href="/reference/rules">
+    26 Floor rules always loaded + 187 Library rules on demand. OWASP, NIST, ISO, GDPR, and more.
+  </Card>
+  <Card title="Skills" icon="bolt" href="/reference/skills">
+    119 reusable patterns across code quality, security, backend, infrastructure, finance, and AI/ML.
+  </Card>
+  <Card title="Agents" icon="robot" href="/reference/agents">
+    39 specialist agents with explicit veto authority and capability-aware model selection.
+  </Card>
+  <Card title="Commands" icon="terminal" href="/reference/commands">
+    33 slash commands: /code-review, /tdd, /verify, /learn, /evolve, and more.
+  </Card>
+  <Card title="Hooks" icon="shield-check" href="/reference/hooks">
+    25+ mechanical quality gates enforced at every lifecycle event — no silent failures.
+  </Card>
+  <Card title="Project Bootstrap" icon="folder-plus" href="/guides/project-bootstrap">
+    Auto-scaffold a workspace .claude/ directory with rules, plans, memory, and audits.
+  </Card>
+</CardGroup>
+
+## Install in three minutes
+
+<Steps>
+  <Step title="Clone the repository">
+    ```bash
+    git clone https://github.com/Nmor/the-claude-council.git
+    cd the-claude-council
+    ```
+  </Step>
+  <Step title="Run the installer">
+    <CodeGroup>
+    ```bash macOS / Linux / WSL2
+    ./bootstrap/install.sh
+    ```
+    ```powershell Windows (PowerShell)
+    Set-ExecutionPolicy -Scope Process Bypass
+    .\bootstrap\install.ps1
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Verify the install">
+    <CodeGroup>
+    ```bash macOS / Linux / WSL2
+    ./bootstrap/verify.sh
+    ```
+    ```powershell Windows (PowerShell)
+    .\bootstrap\verify.ps1
+    ```
+    </CodeGroup>
+  </Step>
+  <Step title="Open any project">
+    Open any project in a Claude Code-compatible IDE. The Council activates on the next prompt.
+  </Step>
+</Steps>
+
+## The 16-division structure
+
+The Council speaks from five always-active Core Divisions and eleven Extended Divisions that auto-fire on matching triggers.
+
+| Division | Agents | Trigger |
+|---|---|---|
+| **1. Architecture & Planning** | `architect`, `planner` | Every task |
+| **2. Implementation & Build** | build resolvers, `refactor-cleaner`, `database-reviewer` | Every code change |
+| **3. Quality & Review** | `code-reviewer`, language reviewers, `doc-updater` | Every code/docs change |
+| **4. Security** | `security-reviewer` | Every task — VETO authority |
+| **5. Testing & QA** | `tdd-guide`, `e2e-runner` | Every code change |
+| **6–16. Extended Eleven** | compliance, UX, ops, data, finance, risk, strategy, people, ESG, ethics, comms | Trigger-matched |
+
+<Note>
+The Council scales its review to the work. Routine tasks get concise, relevant guidance — not repeated speeches. Full deep-review templates are available for high-risk or explicitly complex work.
+</Note>

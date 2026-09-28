@@ -1,0 +1,199 @@
+---
+title: "Agents Catalog: 39 Specialist Agents Across 16 Divisions"
+sidebarTitle: "Agents"
+description: "Complete reference for all 39 specialist agents in The Claude Council, organized by division with model selection, role descriptions, and veto authority."
+---
+
+The Claude Council ships 39 specialist agents organized across 16 divisions. Agents are delegatable specialists — the Council protocol automatically delegates to them when their expertise is needed. Each agent is declared in its own Markdown file under `~/.claude/agents/` with frontmatter defining its `name`, `description`, `tools`, and `model`. Touching certain files auto-engages the relevant agents silently, with no slash command or explicit delegation needed.
+
+## Principal-level template
+
+Every agent in the Council meets the principal-level bar defined in `principal-level-mandate.md`. Each agent file contains all 11 of the following elements:
+
+1. **Frontmatter** — `name`, `description`, `tools`, `model`
+2. **Identity + mission** — a principal-level statement of what the agent owns
+3. **Global rules enforced** — explicit cross-references to the rules the agent enforces
+4. **Auto-fire triggers** — file globs, keywords, and scope conditions that cause automatic engagement
+5. **Decision authority** — veto / casting vote / advisory, with rationale for the tier
+6. **Review checklist or workflow** — explicit checks with severity labels
+7. **Standards cited** — version and section numbers (e.g., OWASP Top 10 2021 A01, WCAG 2.2 §1.4.3)
+8. **Output shape** — structured findings, not narrative prose
+9. **Anti-patterns to reject** — concrete bad patterns with named alternatives
+10. **Pairing model** — which other agents this agent works with and in what order
+11. **When to escalate to user** — explicit triggers for surfacing decisions that require human judgment
+
+## Model selection
+
+Each agent's role maps to a capability-aware ladder. The Council spawns the best model available in the install: **Fable → Opus → Sonnet → Haiku** (defaulting to `{opus, sonnet, haiku}` when Fable is not present). The model listed in each table below is that agent's default for a direct spawn — its ladder floor.
+
+| Tier | Use cases |
+| ---- | --------- |
+| **fable** | Hardest / long-horizon / novel non-security work, on installs where Fable is available |
+| **opus** | Deep reasoning, review, planning, security, compliance, ethics — quality and broad coverage |
+| **sonnet** | Mechanical build and compile fixes, narrow-scope reviewers, verification-loop agents |
+| **haiku** | Mechanical doc work — codemaps, README maintenance |
+
+## Agents by Council Division
+
+### Division 1: Architecture & Planning
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `architect` | opus | System design; scalability analysis; technical trade-offs; ADRs |
+| `planner` | opus | Implementation plans; phased delivery; dependency analysis; risk assessment |
+
+### Division 2: Implementation & Build
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `build-error-resolver` | sonnet | Fix TypeScript/JavaScript build failures; type errors; module resolution |
+| `go-build-resolver` | sonnet | Fix Go compilation errors; vet warnings; golangci-lint issues; module deps |
+| `python-build-resolver` | sonnet | Fix Python build/import/packaging + mypy/ruff/pyright errors |
+| `rust-build-resolver` | sonnet | Fix Rust cargo build/check + borrow-checker/trait/lifetime errors |
+| `java-build-resolver` | sonnet | Fix Java/Kotlin Maven/Gradle compile + classpath/module errors |
+| `dotnet-build-resolver` | sonnet | Fix .NET/C# dotnet build + nullable/analyzer/package errors |
+| `ruby-build-resolver` | sonnet | Fix Ruby load/syntax/bundler + rubocop/Sorbet errors |
+| `php-build-resolver` | sonnet | Fix PHP composer/autoload/syntax + PHPStan/Psalm errors |
+| `swift-build-resolver` | sonnet | Fix Swift build/compile + optional/type/module errors (not signing) |
+| `refactor-cleaner` | sonnet | Dead code removal; unused exports; duplicate detection; dependency cleanup |
+| `database-reviewer` | opus | PostgreSQL query audit; schema design; RLS; indexing; connection pooling |
+| `infra-reviewer` | sonnet | Dockerfile; Terraform; CI/CD review |
+
+### Division 3: Quality & Review
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `code-reviewer` | opus | Cross-language code review; severity-based findings (BLOCKER → SUGGESTION) |
+| `go-reviewer` | opus | Go-specific review: idioms; error handling; goroutine safety; race detection |
+| `python-reviewer` | opus | Python-specific review: PEP 8; type hints; framework patterns; security |
+| `java-reviewer` | sonnet | Java / Spring code review |
+| `mobile-reviewer` | sonnet | Swift + Dart/Flutter review |
+| `doc-updater` | haiku | Documentation generation; codemaps; README maintenance |
+
+### Division 4: Security
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `security-reviewer` | opus | OWASP Top 10; secrets detection; input validation; auth/authz; dependency CVEs |
+
+<Note>
+**Veto authority**: `security-reviewer` holds **VETO on BLOCKER** findings. A security BLOCKER blocks the change from proceeding until resolved — it cannot be overridden by advisory agents.
+</Note>
+
+### Division 5: Testing & QA
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `tdd-guide` | opus | Test-first methodology; Red-Green-Refactor; 90% touched / 80% project coverage |
+| `e2e-runner` | opus | End-to-end tests; Playwright; critical user journeys; flaky test management |
+| `performance-reviewer` | sonnet | Profiling; load testing; performance budgets |
+
+### Division 6: Compliance & Legal
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `compliance-reviewer` | opus | GDPR; CCPA; HIPAA; PCI-DSS; SOC 2; ISO 27001 |
+| `payments-reviewer` | opus | Payments / escrow / open-banking / PCI-DSS / PSD2 / MTL / AML |
+| `health-reviewer` | opus | HIPAA / 42 CFR Part 2 / FDA SaMD / FHIR / clinical-data / state telehealth |
+| `education-reviewer` | opus | FERPA / COPPA / state student-privacy / LTI / SCORM / xAPI / proctoring / edtech |
+
+<Note>
+**Veto authority**: All four Division 6 agents hold **VETO** within their respective scopes. `compliance-reviewer` vetoes on any regulatory finding. `payments-reviewer` vetoes within payments scope. `health-reviewer` vetoes within health scope. `education-reviewer` vetoes within edtech scope. Regulatory vetoes cannot be overridden by other divisions.
+</Note>
+
+### Division 7: Product, UX & Customer Experience
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `ux-reviewer` | sonnet | Information architecture; usability; copy |
+| `accessibility-reviewer` | opus | WCAG 2.2 + ARIA audit |
+
+### Division 8: Operations & Reliability
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `ops-reviewer` | sonnet | Runbooks; SLO/SLA/SLI; on-call; deploy posture; monitoring |
+
+### Division 9: Data & Analytics
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `data-reviewer` | sonnet | Schema governance; event taxonomy; PII flows; analytics pipelines |
+
+### Division 10: Finance & FinOps
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `finance-reviewer` | sonnet | Cloud cost; unit economics; pricing impact; ROI |
+
+### Division 11: Risk Management
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `risk-reviewer` | sonnet | BCP/DR; scenario planning; blast-radius; change risk |
+
+<Note>
+**Veto authority**: `risk-reviewer` holds **VETO on out-of-scope blast-radius** findings — changes whose blast radius exceeds the declared change scope are blocked until scope is aligned or risk is accepted by the user.
+</Note>
+
+### Division 12: Strategy & Innovation
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `strategy-reviewer` | sonnet | Market positioning; build-vs-buy; deprecation; vendor selection |
+
+### Division 13: People & Culture
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `people-reviewer` | sonnet | Knowledge mgmt; hiring criteria; dev experience |
+
+### Division 14: Sustainability & ESG
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `esg-reviewer` | sonnet | Carbon footprint; region carbon intensity; ESG reporting |
+
+### Division 15: Ethics & Responsible AI
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `ai-ethics-reviewer` | opus | AI safety; fairness; bias; dataset provenance |
+
+<Note>
+**Veto authority**: `ai-ethics-reviewer` holds **VETO on AI safety / fairness / bias** findings. Any AI or ML component with an unresolved safety or bias finding is blocked from shipping.
+</Note>
+
+### Division 16: Communications & Documentation
+
+| Agent | Model | Role |
+| ----- | ----- | ---- |
+| `comms-reviewer` | sonnet | Public-facing artifact review; crisis comms; brand consistency |
+
+## Veto authority summary
+
+The following agents hold hard veto authority within their scopes. A veto blocks the change from proceeding — advisory agents from other divisions cannot override it.
+
+| Agent | Veto scope |
+| ----- | ---------- |
+| `security-reviewer` | BLOCKER-severity security findings |
+| `compliance-reviewer` | Any regulatory compliance finding |
+| `payments-reviewer` | Payments, escrow, open-banking scope |
+| `health-reviewer` | Healthcare, clinical data, FDA SaMD scope |
+| `education-reviewer` | Edtech, student-data, FERPA/COPPA scope |
+| `risk-reviewer` | Out-of-scope blast-radius findings |
+| `ai-ethics-reviewer` | AI safety, fairness, and bias findings |
+
+All other agents — including `ux-reviewer`, `accessibility-reviewer`, `ops-reviewer`, `data-reviewer`, `finance-reviewer`, `strategy-reviewer`, `people-reviewer`, `esg-reviewer`, `comms-reviewer`, and all build resolvers — operate in **advisory** mode. Their findings are surfaced as recommendations rather than hard blocks.
+
+## Parallel agent execution
+
+Per the Council's standing directive, agents run at most **2 in parallel**. Heavier fan-out is sequential to keep output legible and the user's review surface tractable.
+
+When agents are dispatched in parallel, they are sent in a single message with multiple tool calls. When agents depend on each other's output — for example, `code-reviewer` reviewing the result of `build-error-resolver`'s fix — they run sequentially.
+
+## Auto-delegation via auto-skills
+
+The `auto-skills.md` rule maps file types to both skills and agents. When you touch a file, matching agents auto-engage silently with no slash command or explicit delegation required.
+
+For example, touching a `*.go` file auto-engages `go-reviewer`, `go-build-resolver`, `tdd-guide`, and `security-reviewer`. Touching a `payments/charge.ts` file auto-engages `payments-reviewer`, `compliance-reviewer`, `security-reviewer`, `finance-reviewer`, `risk-reviewer`, and `code-reviewer`.

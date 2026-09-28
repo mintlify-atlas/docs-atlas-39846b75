@@ -1,47 +1,141 @@
 ---
-title: "Quickstart"
-description: "Begin with a guide on the fastest path to a successful outcome"
+title: "Get Started with The Claude Council in 3 Minutes"
+sidebarTitle: "Quickstart"
+description: "Clone the repo, run the installer, and verify — The Claude Council is active on your next Claude Code session. Works on macOS, Linux, Windows, and Codex CLI."
 ---
 
-Describe how someone begins using your product. What is the first thing they need to do? Are there any prerequisites?
-
-A quickstart should take someone from zero to using your product. They'll get a quick win and a sense of what they can accomplish.
+The Claude Council is a drop-in `~/.claude/` configuration — no build step, no package manager, no cloud account required. The installer is idempotent: any existing `~/.claude/` is moved aside to a timestamped backup before the new config lands, so you can re-run it safely at any time. From a fresh clone to a fully active Council takes about three minutes on any supported platform.
 
 ## Prerequisites
 
-Before you begin, you must have:
+| Requirement | Minimum | Notes |
+|-------------|---------|-------|
+| **`git`** | Any recent | macOS: `brew install git`. Linux: distro package. Windows: [git-scm.com](https://git-scm.com/) |
+| **`bash`** *(macOS / Linux / WSL2)* | 4.0+ | macOS ships with bash 3.2 — see the note below. Not needed on Windows-native. |
+| **`claude` CLI** | Latest | Install separately from [Anthropic's docs](https://docs.claude.com/claude-code) |
+| **`rsync`** *(macOS / Linux, optional)* | Any | Speeds up the install; falls back to `cp -R` if absent |
+| **PowerShell** *(Windows only)* | 5.1+ | Ships with Windows 10/11; PowerShell Core 7+ also works |
 
-- Requirement one (for example, Node.js 18+, a free account, an API key)
-- Requirement two (for example, a compatible device, a compatible browser, a compatible operating system)
-
-## Get started
+## Installation Steps
 
 <Steps>
-  <Step title="Install">
-    Describe how to install your product or sign up.
+  <Step title="Clone the repository">
+    Clone The Claude Council repo to any convenient location — keep it a **sibling** of your projects, never a parent directory.
 
     ```bash
-    npm install your-package
+    # Using git
+    git clone https://github.com/Nmor/the-claude-council.git
+
+    # Or using the GitHub CLI
+    gh repo clone Nmor/the-claude-council
+    ```
+
+    ```bash
+    cd the-claude-council
     ```
   </Step>
-  <Step title="Configure">
-    Describe any setup or configuration needed before first use.
 
-    ```bash
-    your-cli init
+  <Step title="Run the installer">
+    The installer backs up any existing `~/.claude/`, copies the full config surface, creates runtime directories, and auto-detects installed IDEs.
+
+    <CodeGroup>
+      ```bash macOS / Linux / WSL2
+      ./bootstrap/install.sh
+      ```
+
+      ```powershell Windows (PowerShell)
+      # Allow script execution for this session
+      Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
+
+      .\bootstrap\install.ps1
+      ```
+    </CodeGroup>
+  </Step>
+
+  <Step title="Verify the installation">
+    Run the post-install self-test to confirm all rules, skills, agents, commands, and hooks are present and healthy.
+
+    <CodeGroup>
+      ```bash macOS / Linux / WSL2
+      ./bootstrap/verify.sh
+      ```
+
+      ```powershell Windows (PowerShell)
+      .\bootstrap\verify.ps1
+      ```
+    </CodeGroup>
+
+    A healthy install ends with:
+
+    ```text
+    ✓ PASS — global Claude config is healthy.
     ```
   </Step>
-  <Step title="Run it">
-    Show the first thing a user does to see it working.
 
-    ```bash
-    your-cli start
-    ```
+  <Step title="Open any project in Claude Code">
+    Open any project in a Claude Code-compatible IDE (VS Code, Cursor, Windsurf, JetBrains, or the `claude` CLI). The Council fires automatically on the next prompt — no project-level configuration needed.
   </Step>
 </Steps>
 
-<Tip>
-  Give people a way to get help. This could be a link to a support page, a chat with a customer support agent, or a forum for your product.
+## What the Installer Does
 
-  Example: Need help? Reach out to us at [support@yourcompany.com](mailto:support@yourcompany.com).
+The installer performs these steps in order:
+
+- **Backs up** any existing `~/.claude/` to `~/.claude.bak.<timestamp>` (unless `--force` is passed)
+- **Copies** the config surface — rules, skills, agents, commands, hooks, templates, and `settings.json` — into `~/.claude/`
+- **Creates** the runtime directories Claude Code expects: `audits/`, `plans/`, `file-history/`, `sessions/`, and others
+- **Detects** installed IDEs (VS Code, Cursor, Windsurf, JetBrains) and offers per-IDE integration templates
+
+## Installer Flags
+
+| Bash flag | PowerShell flag | Effect |
+|-----------|----------------|--------|
+| `--dry-run` | `-DryRun` | Preview all actions without making any changes |
+| `--force` | `-Force` | Skip backup and overwrite existing `~/.claude/` directly |
+| `--no-ide` | `-NoIde` | Skip IDE integration detection and template copying |
+
+Pass flags directly to the installer:
+
+<CodeGroup>
+  ```bash macOS / Linux / WSL2
+  # Preview what would change without applying it
+  ./bootstrap/install.sh --dry-run
+
+  # Skip IDE integration
+  ./bootstrap/install.sh --no-ide
+  ```
+
+  ```powershell Windows (PowerShell)
+  # Preview what would change without applying it
+  .\bootstrap\install.ps1 -DryRun
+
+  # Skip IDE integration
+  .\bootstrap\install.ps1 -NoIde
+  ```
+</CodeGroup>
+
+<Note>
+  **macOS bash version:** macOS ships with bash 3.2 (the last GPL2-era release). The installer requires bash 4.0+. Install a modern bash with `brew install bash`, then either re-launch your terminal or invoke the installer explicitly:
+
+  ```bash
+  /opt/homebrew/bin/bash bootstrap/install.sh
+  ```
+</Note>
+
+<Tip>
+  Run `./bootstrap/verify.sh --verbose` (or `.\bootstrap\verify.ps1 -Verbose` on Windows) to see the full verification block with per-check pass/fail lines across all eight phases: Layout, Inventory, Agent frontmatter, Skill presence, Hook executability, Cross-references, Contamination scan, and Code-graph validation.
 </Tip>
+
+## Next Steps
+
+<CardGroup cols={3}>
+  <Card title="Full Installation Guide" icon="wrench" href="/installation">
+    Per-platform walkthroughs for macOS, Linux, Windows, and WSL2 — plus IDE integration details and uninstall instructions.
+  </Card>
+  <Card title="Architecture" icon="sitemap" href="/concepts/architecture">
+    Understand how the 16 divisions, Floor rules, Library rules, skills, agents, and hooks fit together.
+  </Card>
+  <Card title="Council Protocol" icon="shield" href="/concepts/council-protocol">
+    Learn how the Council scales review depth to the work, handles veto authority, and enforces verify-before-claim.
+  </Card>
+</CardGroup>
